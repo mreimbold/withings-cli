@@ -14,6 +14,9 @@ const (
 	exitCodeSuccess = 0
 	exitCodeFailure = 1
 	exitCodeUsage   = 2
+	exitCodeAuth    = 3
+	exitCodeNetwork = 4
+	exitCodeAPI     = 5
 )
 
 type globalOptions struct {
@@ -126,7 +129,7 @@ func validateGlobalOptions(opts *globalOptions) error {
 func addRootCommands(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(newActivityCommand(notImplementedHandler))
 	rootCmd.AddCommand(newAPICommand(notImplementedHandler))
-	rootCmd.AddCommand(newAuthCommand(notImplementedHandler))
+	rootCmd.AddCommand(newAuthCommand())
 	rootCmd.AddCommand(newHeartCommand(notImplementedHandler))
 	rootCmd.AddCommand(newMeasuresCommand(notImplementedHandler))
 	rootCmd.AddCommand(newSleepCommand(notImplementedHandler))

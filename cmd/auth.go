@@ -26,32 +26,34 @@ type authSetClientOptions struct {
 	SecretStdin bool
 }
 
-func newAuthCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthCommand() *cobra.Command {
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	authCmd := &cobra.Command{
 		Use:   "auth",
 		Short: "Manage OAuth and client credentials",
 	}
 
-	authCmd.AddCommand(newAuthLoginCommand(notImplemented))
-	authCmd.AddCommand(newAuthAuthorizeURLCommand(notImplemented))
-	authCmd.AddCommand(newAuthExchangeCommand(notImplemented))
-	authCmd.AddCommand(newAuthRefreshCommand(notImplemented))
-	authCmd.AddCommand(newAuthStatusCommand(notImplemented))
-	authCmd.AddCommand(newAuthLogoutCommand(notImplemented))
-	authCmd.AddCommand(newAuthSetClientCommand(notImplemented))
+	authCmd.AddCommand(newAuthLoginCommand())
+	authCmd.AddCommand(newAuthAuthorizeURLCommand())
+	authCmd.AddCommand(newAuthExchangeCommand())
+	authCmd.AddCommand(newAuthRefreshCommand())
+	authCmd.AddCommand(newAuthStatusCommand())
+	authCmd.AddCommand(newAuthLogoutCommand())
+	authCmd.AddCommand(newAuthSetClientCommand())
 
 	return authCmd
 }
 
-func newAuthLoginCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthLoginCommand() *cobra.Command {
 	var opts authLoginOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Start browser OAuth flow and store tokens",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAuthLogin(cmd, opts)
+		},
 	}
 
 	cmd.Flags().StringVar(
@@ -76,14 +78,16 @@ func newAuthLoginCommand(notImplemented runEFunc) *cobra.Command {
 	return cmd
 }
 
-func newAuthAuthorizeURLCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthAuthorizeURLCommand() *cobra.Command {
 	var opts authAuthorizeURLOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	cmd := &cobra.Command{
 		Use:   "authorize-url",
 		Short: "Print the OAuth authorize URL",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAuthAuthorizeURL(cmd, opts)
+		},
 	}
 
 	cmd.Flags().StringVar(
@@ -102,14 +106,16 @@ func newAuthAuthorizeURLCommand(notImplemented runEFunc) *cobra.Command {
 	return cmd
 }
 
-func newAuthExchangeCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthExchangeCommand() *cobra.Command {
 	var opts authExchangeOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	cmd := &cobra.Command{
 		Use:   "exchange",
 		Short: "Exchange an authorization code for tokens",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAuthExchange(cmd, opts)
+		},
 	}
 
 	cmd.Flags().StringVar(
@@ -122,32 +128,34 @@ func newAuthExchangeCommand(notImplemented runEFunc) *cobra.Command {
 	return cmd
 }
 
-func newAuthRefreshCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthRefreshCommand() *cobra.Command {
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	return &cobra.Command{
 		Use:   "refresh",
 		Short: "Refresh the access token",
-		RunE:  notImplemented,
+		RunE:  runAuthRefresh,
 	}
 }
 
-func newAuthStatusCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthStatusCommand() *cobra.Command {
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	return &cobra.Command{
 		Use:   "status",
 		Short: "Show token scopes and expiry",
-		RunE:  notImplemented,
+		RunE:  runAuthStatus,
 	}
 }
 
-func newAuthLogoutCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthLogoutCommand() *cobra.Command {
 	var opts authLogoutOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	cmd := &cobra.Command{
 		Use:   "logout",
 		Short: "Delete stored tokens",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAuthLogout(cmd, opts)
+		},
 	}
 
 	cmd.Flags().BoolVar(
@@ -160,14 +168,16 @@ func newAuthLogoutCommand(notImplemented runEFunc) *cobra.Command {
 	return cmd
 }
 
-func newAuthSetClientCommand(notImplemented runEFunc) *cobra.Command {
+func newAuthSetClientCommand() *cobra.Command {
 	var opts authSetClientOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	cmd := &cobra.Command{
 		Use:   "set-client",
 		Short: "Set OAuth client ID and secret",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAuthSetClient(cmd, opts)
+		},
 	}
 
 	cmd.Flags().StringVar(
