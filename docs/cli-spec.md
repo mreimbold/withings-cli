@@ -67,6 +67,7 @@ withings [global flags] <subcommand> [args]
   - flags: `--redirect-uri <uri>`, `--no-open`, `--listen <addr:port>`
 - `withings auth status` show token age/scopes/expiry
 - `withings auth logout` delete stored tokens (requires confirmation or `--force`)
+- access tokens are refreshed automatically when expired (requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`)
 
 ## Data commands (common flags)
 - common flags: `--start <rfc3339|epoch>`, `--end <rfc3339|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`
@@ -95,7 +96,7 @@ withings [global flags] <subcommand> [args]
 
 ## API escape hatch
 - `withings api call --service <service> --action <action> --params <json>`
-  - `--params` accepts `@file.json` or `-` for stdin
+  - `--params` accepts a JSON object; use `@file.json` or `-` for stdin
   - `--dry-run` prints request URL/body without executing
   - use `--json` for raw response passthrough
 

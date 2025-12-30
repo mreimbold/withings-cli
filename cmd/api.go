@@ -9,7 +9,7 @@ type apiCallOptions struct {
 	DryRun  bool
 }
 
-func newAPICommand(notImplemented runEFunc) *cobra.Command {
+func newAPICommand() *cobra.Command {
 	var opts apiCallOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
@@ -21,7 +21,9 @@ func newAPICommand(notImplemented runEFunc) *cobra.Command {
 	apiCallCmd := &cobra.Command{
 		Use:   "call",
 		Short: "Call a Withings API service/action",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runAPICall(cmd, opts)
+		},
 	}
 
 	apiCmd.AddCommand(apiCallCmd)

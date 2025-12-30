@@ -128,7 +128,7 @@ func validateGlobalOptions(opts *globalOptions) error {
 
 func addRootCommands(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(newActivityCommand(notImplementedHandler))
-	rootCmd.AddCommand(newAPICommand(notImplementedHandler))
+	rootCmd.AddCommand(newAPICommand())
 	rootCmd.AddCommand(newAuthCommand())
 	rootCmd.AddCommand(newHeartCommand(notImplementedHandler))
 	rootCmd.AddCommand(newMeasuresCommand(notImplementedHandler))

@@ -31,7 +31,9 @@ const (
 	oauthContentTypeForm    = "application/x-www-form-urlencoded"
 	oauthGrantTypeKey       = "grant_type"
 	oauthGrantAuthorization = "authorization_code"
+	oauthGrantRefresh       = "refresh_token"
 	oauthRedirectURIKey     = "redirect_uri"
+	oauthRefreshTokenKey    = "refresh_token"
 	oauthResponseTypeKey    = "response_type"
 	oauthResponseTypeCode   = "code"
 	oauthScopeKey           = "scope"
@@ -101,6 +103,23 @@ func exchangeToken(
 	values.Set(oauthClientSecretKey, clientSecret)
 	values.Set(oauthCodeKey, code)
 	values.Set(oauthRedirectURIKey, redirectURI)
+
+	return doTokenRequest(ctx, tokenURL, values)
+}
+
+func refreshToken(
+	ctx context.Context,
+	tokenURL string,
+	clientID string,
+	clientSecret string,
+	refresh string,
+) (tokenBody, error) {
+	values := url.Values{}
+	values.Set(oauthActionKey, oauthActionRequestToken)
+	values.Set(oauthGrantTypeKey, oauthGrantRefresh)
+	values.Set(oauthClientIDKey, clientID)
+	values.Set(oauthClientSecretKey, clientSecret)
+	values.Set(oauthRefreshTokenKey, refresh)
 
 	return doTokenRequest(ctx, tokenURL, values)
 }
