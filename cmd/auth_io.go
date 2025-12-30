@@ -220,15 +220,6 @@ func writeFormatted(format string, value any) error {
 	return nil
 }
 
-func readStdinAll() (string, error) {
-	data, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		return emptyString, fmt.Errorf("read stdin: %w", err)
-	}
-
-	return strings.TrimSpace(string(data)), nil
-}
-
 func readLine(prompt string, opts globalOptions) (string, error) {
 	if opts.NoInput || !isTerminal(os.Stdin) {
 		return emptyString, errInputRequired

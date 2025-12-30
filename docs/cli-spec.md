@@ -10,7 +10,7 @@ withings [global flags] <subcommand> [args]
 ```
 
 ## Subcommands
-- `withings auth ...` manage OAuth, tokens, and client credentials
+- `withings auth ...` manage OAuth tokens
 - `withings user ...` user/profile lookups
 - `withings measures ...` weight/BP/body metrics
 - `withings activity ...` activity summaries
@@ -57,21 +57,16 @@ withings [global flags] <subcommand> [args]
   - `WITHINGS_REFRESH_TOKEN` (optional override)
   - `WITHINGS_CLOUD` (`eu` or `us`)
   - `WITHINGS_BASE_URL` (advanced override)
+- client credentials are read from env only; the CLI does not store them in config files
 
 ## Auth commands
 - `withings auth login`
   - performs browser OAuth with local callback server by default
+  - requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`
+  - exchanges the authorization code and stores tokens automatically
   - flags: `--redirect-uri <uri>`, `--no-open`, `--listen <addr:port>`
-- `withings auth authorize-url`
-  - prints authorize URL only
-  - flags: `--redirect-uri <uri>`, `--scope <scopes>`
-- `withings auth exchange`
-  - exchanges code for tokens; reads from stdin by default
-  - flags: `--code <code>`
-- `withings auth refresh` force refresh token
 - `withings auth status` show token age/scopes/expiry
 - `withings auth logout` delete stored tokens (requires confirmation or `--force`)
-- `withings auth set-client` set client id/secret (prompt; allow `--secret-stdin`)
 
 ## Data commands (common flags)
 - common flags: `--start <rfc3339|epoch>`, `--end <rfc3339|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`
@@ -112,8 +107,7 @@ withings [global flags] <subcommand> [args]
 ## Examples
 ```bash
 withings auth login
-withings auth authorize-url --redirect-uri http://localhost:9876/callback
-echo "CODE_FROM_BROWSER" | withings auth exchange
+withings auth status
 withings measures get --type weight,bp_sys,bp_dia --start 2025-12-23 --end 2025-12-30
 withings activity get --date 2025-12-29 --json
 withings sleep get --start 2025-12-01 --end 2025-12-31 --plain

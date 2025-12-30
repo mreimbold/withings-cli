@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -38,68 +37,6 @@ type authClientConfig struct {
 	RedirectURI  string
 }
 
-func runAuthAuthorizeURL(
-	cmd *cobra.Command,
-	opts authAuthorizeURLOptions,
-) error {
-	globalOpts, err := readGlobalOptions(cmd)
-	if err != nil {
-		return err
-	}
-
-	sources, err := loadConfigSources(globalOpts.Config)
-	if err != nil {
-		return err
-	}
-
-	projectConfig := sources.Project
-	userConfig := sources.User
-
-	resolvedClientID := resolveValue(
-		emptyString,
-		os.Getenv(envClientID),
-		projectConfig.Value(configKeyClientID),
-		userConfig.Value(configKeyClientID),
-	)
-	if resolvedClientID == emptyString {
-		return newExitError(exitCodeUsage, errMissingClientID)
-	}
-
-	redirectURI := resolveValue(
-		opts.RedirectURI,
-		os.Getenv(envRedirectURI),
-		projectConfig.Value(configKeyRedirectURI),
-		userConfig.Value(configKeyRedirectURI),
-	)
-
-	if redirectURI == emptyString {
-		return newExitError(exitCodeUsage, errMissingRedirectURI)
-	}
-
-	scope := opts.Scope
-	state := randomState()
-
-	authorizeURL, err := buildAuthorizeURL(
-		accountBaseURL(globalOpts.Cloud),
-		resolvedClientID,
-		redirectURI,
-		scope,
-		state,
-	)
-	if err != nil {
-		return err
-	}
-
-	if globalOpts.JSON {
-		return writeOutput(globalOpts, map[string]string{
-			"url":   authorizeURL,
-			"state": state,
-		})
-	}
-
-	return writeOutput(globalOpts, authorizeURL)
-}
-
 func runAuthLogin(cmd *cobra.Command, opts authLoginOptions) error {
 	globalOpts, err := readGlobalOptions(cmd)
 	if err != nil {
@@ -111,14 +48,9 @@ func runAuthLogin(cmd *cobra.Command, opts authLoginOptions) error {
 		return err
 	}
 
-	projectConfig := sources.Project
 	userConfig := sources.User
 
-	authConfig := resolveAuthConfig(
-		opts.RedirectURI,
-		projectConfig,
-		userConfig,
-	)
+	authConfig := resolveAuthConfig(opts.RedirectURI)
 
 	err = requireClientCredentials(authConfig, errClientCredentialsMissing)
 	if err != nil {
@@ -198,109 +130,6 @@ func executeAuthLogin(
 	return writeOutput(globalOpts, "Authentication successful. Tokens saved.")
 }
 
-func runAuthExchange(cmd *cobra.Command, opts authExchangeOptions) error {
-	globalOpts, err := readGlobalOptions(cmd)
-	if err != nil {
-		return err
-	}
-
-	sources, err := loadConfigSources(globalOpts.Config)
-	if err != nil {
-		return err
-	}
-
-	projectConfig := sources.Project
-	userConfig := sources.User
-
-	code, err := resolveAuthCode(opts)
-	if err != nil {
-		return err
-	}
-
-	authConfig := resolveAuthConfig(emptyString, projectConfig, userConfig)
-
-	err = requireFullAuthConfig(authConfig, errClientConfigMissing)
-	if err != nil {
-		return err
-	}
-
-	apiURL := apiBaseURL(globalOpts.BaseURL, globalOpts.Cloud)
-	tokenURL := tokenEndpoint(apiURL)
-
-	token, err := exchangeToken(
-		cmd.Context(),
-		tokenURL,
-		authConfig.ClientID,
-		authConfig.ClientSecret,
-		code,
-		authConfig.RedirectURI,
-	)
-	if err != nil {
-		return classifyTokenError(err)
-	}
-
-	err = persistTokens(userConfig, token)
-	if err != nil {
-		return err
-	}
-
-	return writeOutput(globalOpts, "Tokens exchanged and saved.")
-}
-
-func runAuthRefresh(cmd *cobra.Command, _ []string) error {
-	globalOpts, err := readGlobalOptions(cmd)
-	if err != nil {
-		return err
-	}
-
-	sources, err := loadConfigSources(globalOpts.Config)
-	if err != nil {
-		return err
-	}
-
-	projectConfig := sources.Project
-	userConfig := sources.User
-
-	authConfig := resolveAuthConfig(emptyString, projectConfig, userConfig)
-
-	err = requireClientCredentials(authConfig, errClientIDSecretRequired)
-	if err != nil {
-		return err
-	}
-
-	refreshTokenValue := resolveValue(
-		emptyString,
-		os.Getenv(envRefreshToken),
-		projectConfig.Value(configKeyRefreshToken),
-		userConfig.Value(configKeyRefreshToken),
-	)
-
-	if refreshTokenValue == emptyString {
-		return newExitError(exitCodeAuth, errRefreshTokenRequired)
-	}
-
-	apiURL := apiBaseURL(globalOpts.BaseURL, globalOpts.Cloud)
-	tokenURL := tokenEndpoint(apiURL)
-
-	token, err := refreshToken(
-		cmd.Context(),
-		tokenURL,
-		authConfig.ClientID,
-		authConfig.ClientSecret,
-		refreshTokenValue,
-	)
-	if err != nil {
-		return classifyTokenError(err)
-	}
-
-	err = persistTokens(userConfig, token)
-	if err != nil {
-		return err
-	}
-
-	return writeOutput(globalOpts, "Token refreshed and saved.")
-}
-
 func runAuthStatus(cmd *cobra.Command, _ []string) error {
 	globalOpts, err := readGlobalOptions(cmd)
 	if err != nil {
@@ -354,40 +183,6 @@ func runAuthLogout(cmd *cobra.Command, opts authLogoutOptions) error {
 	}
 
 	return writeOutput(globalOpts, "Tokens removed.")
-}
-
-func runAuthSetClient(cmd *cobra.Command, opts authSetClientOptions) error {
-	globalOpts, err := readGlobalOptions(cmd)
-	if err != nil {
-		return err
-	}
-
-	sources, err := loadConfigSources(globalOpts.Config)
-	if err != nil {
-		return err
-	}
-
-	userConfig := sources.User
-
-	clientID, err := resolveClientID(opts, globalOpts)
-	if err != nil {
-		return err
-	}
-
-	clientSecret, err := resolveClientSecret(opts, globalOpts)
-	if err != nil {
-		return err
-	}
-
-	userConfig.Set(configKeyClientID, clientID)
-	userConfig.Set(configKeyClientSecret, clientSecret)
-
-	err = userConfig.Save()
-	if err != nil {
-		return err
-	}
-
-	return writeOutput(globalOpts, "Client credentials saved.")
 }
 
 func waitForAuthCode(
@@ -638,29 +433,15 @@ func (status authStatus) toLines() []string {
 	}
 }
 
-func resolveAuthConfig(
-	redirectOverride string,
-	projectConfig *configFile,
-	userConfig *configFile,
-) authClientConfig {
+func resolveAuthConfig(redirectOverride string) authClientConfig {
 	return authClientConfig{
-		ClientID: resolveValue(
-			emptyString,
-			os.Getenv(envClientID),
-			projectConfig.Value(configKeyClientID),
-			userConfig.Value(configKeyClientID),
-		),
-		ClientSecret: resolveValue(
-			emptyString,
-			os.Getenv(envClientSecret),
-			projectConfig.Value(configKeyClientSecret),
-			userConfig.Value(configKeyClientSecret),
-		),
+		ClientID:     os.Getenv(envClientID),
+		ClientSecret: os.Getenv(envClientSecret),
 		RedirectURI: resolveValue(
 			redirectOverride,
 			os.Getenv(envRedirectURI),
-			projectConfig.Value(configKeyRedirectURI),
-			userConfig.Value(configKeyRedirectURI),
+			emptyString,
+			emptyString,
 		),
 	}
 }
@@ -673,36 +454,8 @@ func requireClientCredentials(config authClientConfig, missingErr error) error {
 	return nil
 }
 
-func requireFullAuthConfig(config authClientConfig, missingErr error) error {
-	if config.ClientID == emptyString ||
-		config.ClientSecret == emptyString ||
-		config.RedirectURI == emptyString {
-		return newExitError(exitCodeUsage, missingErr)
-	}
-
-	return nil
-}
-
 func buildLocalRedirectURI(listenAddr string) string {
 	return "http://" + listenAddr + "/callback"
-}
-
-func resolveAuthCode(opts authExchangeOptions) (string, error) {
-	code := strings.TrimSpace(opts.Code)
-	if code != emptyString {
-		return code, nil
-	}
-
-	code, err := readStdinAll()
-	if err != nil {
-		return emptyString, err
-	}
-
-	if code == emptyString {
-		return emptyString, newExitError(exitCodeUsage, errAuthCodeRequired)
-	}
-
-	return code, nil
 }
 
 func confirmLogout(
@@ -719,54 +472,6 @@ func confirmLogout(
 	}
 
 	return ok, nil
-}
-
-func resolveClientID(
-	opts authSetClientOptions,
-	globalOpts globalOptions,
-) (string, error) {
-	clientID := strings.TrimSpace(opts.ClientID)
-	if clientID != emptyString {
-		return clientID, nil
-	}
-
-	clientID, err := readLine("Client ID: ", globalOpts)
-	if err != nil {
-		return emptyString, newExitError(exitCodeUsage, err)
-	}
-
-	clientID = strings.TrimSpace(clientID)
-	if clientID == emptyString {
-		return emptyString, newExitError(exitCodeUsage, errClientIDRequired)
-	}
-
-	return clientID, nil
-}
-
-func resolveClientSecret(
-	opts authSetClientOptions,
-	globalOpts globalOptions,
-) (string, error) {
-	var clientSecret string
-
-	var err error
-
-	if opts.SecretStdin {
-		clientSecret, err = readStdinAll()
-	} else {
-		clientSecret, err = readLine("Client secret: ", globalOpts)
-	}
-
-	if err != nil {
-		return emptyString, newExitError(exitCodeUsage, err)
-	}
-
-	clientSecret = strings.TrimSpace(clientSecret)
-	if clientSecret == emptyString {
-		return emptyString, newExitError(exitCodeUsage, errClientSecretRequired)
-	}
-
-	return clientSecret, nil
 }
 
 func handleAuthOpen(

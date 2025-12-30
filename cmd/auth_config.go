@@ -10,9 +10,6 @@ import (
 )
 
 const (
-	configKeyClientID       = "client_id"
-	configKeyClientSecret   = "client_secret"
-	configKeyRedirectURI    = "redirect_uri"
 	configKeyAccessToken    = "access_token"
 	configKeyRefreshToken   = "refresh_token"
 	configKeyScope          = "scope"
