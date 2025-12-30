@@ -75,8 +75,15 @@ withings [global flags] <subcommand> [args]
 
 ### measures
 - `withings measures get`
-  - flags: `--type <list>` (e.g., `weight,bp_sys,bp_dia,fat_mass`), `--category <real|goal>`
-  - behavior: idempotent, read-only
+  - flags: `--type <list>` (e.g., `weight,bp_sys,bp_dia,fat_mass`)
+    - accepted aliases: `weight`, `bodyweight`, `bp_sys`, `bp_dia`,
+      `fat_mass`, `fat_mass_weight`, `fat_ratio`, `fat_free_mass`,
+      `heart_rate`, `temp`, `temperature`, `spo2`, `body_temp`, `skin_temp`,
+      `muscle_mass`,
+      `hydration`, `bone_mass`, `pulse_wave_velocity` (or numeric IDs)
+  - `--category <real|goal|1|2>`
+  - `--last-update` cannot be combined with `--start` or `--end`
+  - behavior: idempotent, read-only; output is raw API JSON (table output TBD)
 
 ### activity
 - `withings activity get`

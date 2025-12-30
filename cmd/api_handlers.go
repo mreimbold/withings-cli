@@ -20,7 +20,6 @@ const (
 	apiActionKey       = "action"
 	apiContentTypeForm = "application/x-www-form-urlencoded"
 	apiPathSeparator   = "/"
-	apiVersionSegment  = "/v2"
 	apiFloatBitSize    = 64
 )
 
@@ -116,11 +115,8 @@ func buildAPICallRequest(
 
 func apiServiceEndpoint(baseURL, service string) string {
 	trimmed := strings.TrimRight(baseURL, "/")
-	if strings.HasSuffix(trimmed, apiVersionSegment) {
-		return trimmed + apiPathSeparator + service
-	}
 
-	return trimmed + apiVersionSegment + apiPathSeparator + service
+	return trimmed + apiPathSeparator + service
 }
 
 func parseAPIParams(raw string) (url.Values, error) {

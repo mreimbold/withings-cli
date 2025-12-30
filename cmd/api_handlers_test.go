@@ -9,15 +9,16 @@ import (
 )
 
 const (
-	apiMeasureService  = "measure"
-	apiMeasureEndpoint = "https://wbsapi.withings.net/v2/measure"
-	apiParamNameKey    = "name"
-	apiParseErrFormat  = "parseAPIParams: %v"
-	apiNameGotFormat   = "name got %q want %q"
-	apiParamsFilePerm  = 0o600
-	apiParamValueTest  = "test"
-	apiParamValueFile  = "file"
-	apiParamValueStdin = "stdin"
+	apiMeasureService    = "measure"
+	apiMeasureEndpoint   = "https://wbsapi.withings.net/measure"
+	apiMeasureEndpointV2 = "https://wbsapi.withings.net/v2/measure"
+	apiParamNameKey      = "name"
+	apiParseErrFormat    = "parseAPIParams: %v"
+	apiNameGotFormat     = "name got %q want %q"
+	apiParamsFilePerm    = 0o600
+	apiParamValueTest    = "test"
+	apiParamValueFile    = "file"
+	apiParamValueStdin   = "stdin"
 )
 
 // TestAPIServiceEndpoint covers endpoint composition with and without /v2.
@@ -46,13 +47,13 @@ func TestAPIServiceEndpoint(t *testing.T) {
 			name:    "base-with-version",
 			baseURL: "https://wbsapi.withings.net/v2",
 			service: apiMeasureService,
-			want:    apiMeasureEndpoint,
+			want:    apiMeasureEndpointV2,
 		},
 		{
 			name:    "base-with-version-slash",
 			baseURL: "https://wbsapi.withings.net/v2/",
 			service: apiMeasureService,
-			want:    apiMeasureEndpoint,
+			want:    apiMeasureEndpointV2,
 		},
 	}
 

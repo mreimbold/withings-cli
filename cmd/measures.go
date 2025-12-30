@@ -11,7 +11,7 @@ type measuresGetOptions struct {
 	Category   string
 }
 
-func newMeasuresCommand(notImplemented runEFunc) *cobra.Command {
+func newMeasuresCommand() *cobra.Command {
 	var opts measuresGetOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
@@ -23,7 +23,9 @@ func newMeasuresCommand(notImplemented runEFunc) *cobra.Command {
 	measuresGetCmd := &cobra.Command{
 		Use:   "get",
 		Short: "Fetch body measures",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runMeasuresGet(cmd, opts)
+		},
 	}
 
 	measuresCmd.AddCommand(measuresGetCmd)
