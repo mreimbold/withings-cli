@@ -13,6 +13,7 @@ READ `~/projects/personal/agent-scripts/AGENTS.MD` BEFORE ANYTHING (skip if miss
 - `go build ./...`: build all packages.
 - `go test ./...`: run tests (if present).
 - `make lint`: run `golangci-lint` (see `Makefile`).
+- Workflow: always run `make lint`, `make fmt`, `make test` before committing changes.
 
 ## Coding Style & Naming Conventions
 - Format Go code with `gofmt`.
