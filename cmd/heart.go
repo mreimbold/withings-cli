@@ -3,34 +3,41 @@ package cmd
 import "github.com/spf13/cobra"
 
 type heartGetOptions struct {
-	TimeRange  TimeRangeOptions
-	Pagination PaginationOptions
-	User       UserOption
-	LastUpdate LastUpdateOption
+	TimeRange  timeRangeOptions
+	Pagination paginationOptions
+	User       userOption
+	LastUpdate lastUpdateOption
 	Signal     bool
 }
 
-var heartGetOpts heartGetOptions
+func newHeartCommand(notImplemented runEFunc) *cobra.Command {
+	var opts heartGetOptions
 
-var heartCmd = &cobra.Command{
-	Use:   "heart",
-	Short: "Heart data",
-}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	heartCmd := &cobra.Command{
+		Use:   "heart",
+		Short: "Heart data",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	heartGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Fetch heart data",
+		RunE:  notImplemented,
+	}
 
-var heartGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Fetch heart data",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(heartCmd)
 	heartCmd.AddCommand(heartGetCmd)
 
-	addTimeRangeFlags(heartGetCmd, &heartGetOpts.TimeRange)
-	addPaginationFlags(heartGetCmd, &heartGetOpts.Pagination)
-	addUserIDFlag(heartGetCmd, &heartGetOpts.User)
-	addLastUpdateFlag(heartGetCmd, &heartGetOpts.LastUpdate)
+	addTimeRangeFlags(heartGetCmd, &opts.TimeRange)
+	addPaginationFlags(heartGetCmd, &opts.Pagination)
+	addUserIDFlag(heartGetCmd, &opts.User)
+	addLastUpdateFlag(heartGetCmd, &opts.LastUpdate)
 
-	heartGetCmd.Flags().BoolVar(&heartGetOpts.Signal, "signal", false, "include signal metadata when available")
+	heartGetCmd.Flags().BoolVar(
+		&opts.Signal,
+		"signal",
+		false,
+		"include signal metadata when available",
+	)
+
+	return heartCmd
 }

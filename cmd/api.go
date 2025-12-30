@@ -9,28 +9,50 @@ type apiCallOptions struct {
 	DryRun  bool
 }
 
-var apiCallOpts apiCallOptions
+func newAPICommand(notImplemented runEFunc) *cobra.Command {
+	var opts apiCallOptions
 
-var apiCmd = &cobra.Command{
-	Use:   "api",
-	Short: "Low-level API access",
-}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	apiCmd := &cobra.Command{
+		Use:   "api",
+		Short: "Low-level API access",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	apiCallCmd := &cobra.Command{
+		Use:   "call",
+		Short: "Call a Withings API service/action",
+		RunE:  notImplemented,
+	}
 
-var apiCallCmd = &cobra.Command{
-	Use:   "call",
-	Short: "Call a Withings API service/action",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(apiCmd)
 	apiCmd.AddCommand(apiCallCmd)
 
-	apiCallCmd.Flags().StringVar(&apiCallOpts.Service, "service", "", "API service name")
-	apiCallCmd.Flags().StringVar(&apiCallOpts.Action, "action", "", "API action name")
-	apiCallCmd.Flags().StringVar(&apiCallOpts.Params, "params", "", "JSON params, @file.json, or - for stdin")
-	apiCallCmd.Flags().BoolVar(&apiCallOpts.DryRun, "dry-run", false, "print request without executing")
+	apiCallCmd.Flags().StringVar(
+		&opts.Service,
+		"service",
+		emptyString,
+		"API service name",
+	)
+	apiCallCmd.Flags().StringVar(
+		&opts.Action,
+		"action",
+		emptyString,
+		"API action name",
+	)
+	apiCallCmd.Flags().StringVar(
+		&opts.Params,
+		"params",
+		emptyString,
+		"JSON params, @file.json, or - for stdin",
+	)
+	apiCallCmd.Flags().BoolVar(
+		&opts.DryRun,
+		"dry-run",
+		false,
+		"print request without executing",
+	)
 
 	_ = apiCallCmd.MarkFlagRequired("service")
 	_ = apiCallCmd.MarkFlagRequired("action")
+
+	return apiCmd
 }

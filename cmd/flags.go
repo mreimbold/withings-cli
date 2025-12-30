@@ -2,46 +2,81 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-type TimeRangeOptions struct {
+type timeRangeOptions struct {
 	Start string
 	End   string
 }
 
-type DateOption struct {
+type dateOption struct {
 	Date string
 }
 
-type PaginationOptions struct {
+type paginationOptions struct {
 	Limit  int
 	Offset int
 }
 
-type UserOption struct {
+type userOption struct {
 	UserID string
 }
 
-type LastUpdateOption struct {
+type lastUpdateOption struct {
 	LastUpdate int64
 }
 
-func addTimeRangeFlags(cmd *cobra.Command, opts *TimeRangeOptions) {
-	cmd.Flags().StringVar(&opts.Start, "start", "", "start time (RFC3339 or epoch)")
-	cmd.Flags().StringVar(&opts.End, "end", "", "end time (RFC3339 or epoch)")
+func addTimeRangeFlags(cmd *cobra.Command, opts *timeRangeOptions) {
+	cmd.Flags().StringVar(
+		&opts.Start,
+		"start",
+		emptyString,
+		"start time (RFC3339 or epoch)",
+	)
+	cmd.Flags().StringVar(
+		&opts.End,
+		"end",
+		emptyString,
+		"end time (RFC3339 or epoch)",
+	)
 }
 
-func addDateFlag(cmd *cobra.Command, opts *DateOption) {
-	cmd.Flags().StringVar(&opts.Date, "date", "", "date (YYYY-MM-DD)")
+func addDateFlag(cmd *cobra.Command, opts *dateOption) {
+	cmd.Flags().StringVar(
+		&opts.Date,
+		"date",
+		emptyString,
+		"date (YYYY-MM-DD)",
+	)
 }
 
-func addPaginationFlags(cmd *cobra.Command, opts *PaginationOptions) {
-	cmd.Flags().IntVar(&opts.Limit, "limit", 0, "limit number of results")
-	cmd.Flags().IntVar(&opts.Offset, "offset", 0, "offset into result set")
+func addPaginationFlags(cmd *cobra.Command, opts *paginationOptions) {
+	cmd.Flags().IntVar(
+		&opts.Limit,
+		"limit",
+		defaultInt,
+		"limit number of results",
+	)
+	cmd.Flags().IntVar(
+		&opts.Offset,
+		"offset",
+		defaultInt,
+		"offset into result set",
+	)
 }
 
-func addUserIDFlag(cmd *cobra.Command, opts *UserOption) {
-	cmd.Flags().StringVar(&opts.UserID, "user-id", "", "Withings user ID")
+func addUserIDFlag(cmd *cobra.Command, opts *userOption) {
+	cmd.Flags().StringVar(
+		&opts.UserID,
+		"user-id",
+		emptyString,
+		"Withings user ID",
+	)
 }
 
-func addLastUpdateFlag(cmd *cobra.Command, opts *LastUpdateOption) {
-	cmd.Flags().Int64Var(&opts.LastUpdate, "last-update", 0, "last update timestamp (epoch)")
+func addLastUpdateFlag(cmd *cobra.Command, opts *lastUpdateOption) {
+	cmd.Flags().Int64Var(
+		&opts.LastUpdate,
+		"last-update",
+		defaultInt64,
+		"last update timestamp (epoch)",
+	)
 }

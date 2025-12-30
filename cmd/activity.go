@@ -3,33 +3,35 @@ package cmd
 import "github.com/spf13/cobra"
 
 type activityGetOptions struct {
-	TimeRange  TimeRangeOptions
-	Date       DateOption
-	Pagination PaginationOptions
-	User       UserOption
-	LastUpdate LastUpdateOption
+	TimeRange  timeRangeOptions
+	Date       dateOption
+	Pagination paginationOptions
+	User       userOption
+	LastUpdate lastUpdateOption
 }
 
-var activityGetOpts activityGetOptions
+func newActivityCommand(notImplemented runEFunc) *cobra.Command {
+	var opts activityGetOptions
 
-var activityCmd = &cobra.Command{
-	Use:   "activity",
-	Short: "Activity summaries",
-}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	activityCmd := &cobra.Command{
+		Use:   "activity",
+		Short: "Activity summaries",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	activityGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Fetch activity summaries",
+		RunE:  notImplemented,
+	}
 
-var activityGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Fetch activity summaries",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(activityCmd)
 	activityCmd.AddCommand(activityGetCmd)
 
-	addTimeRangeFlags(activityGetCmd, &activityGetOpts.TimeRange)
-	addDateFlag(activityGetCmd, &activityGetOpts.Date)
-	addPaginationFlags(activityGetCmd, &activityGetOpts.Pagination)
-	addUserIDFlag(activityGetCmd, &activityGetOpts.User)
-	addLastUpdateFlag(activityGetCmd, &activityGetOpts.LastUpdate)
+	addTimeRangeFlags(activityGetCmd, &opts.TimeRange)
+	addDateFlag(activityGetCmd, &opts.Date)
+	addPaginationFlags(activityGetCmd, &opts.Pagination)
+	addUserIDFlag(activityGetCmd, &opts.User)
+	addLastUpdateFlag(activityGetCmd, &opts.LastUpdate)
+
+	return activityCmd
 }

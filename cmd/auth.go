@@ -26,82 +26,162 @@ type authSetClientOptions struct {
 	SecretStdin bool
 }
 
-var (
-	authLoginOpts        authLoginOptions
-	authAuthorizeURLOpts authAuthorizeURLOptions
-	authExchangeOpts     authExchangeOptions
-	authLogoutOpts       authLogoutOptions
-	authSetClientOpts    authSetClientOptions
-)
+func newAuthCommand(notImplemented runEFunc) *cobra.Command {
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	authCmd := &cobra.Command{
+		Use:   "auth",
+		Short: "Manage OAuth and client credentials",
+	}
 
-var authCmd = &cobra.Command{
-	Use:   "auth",
-	Short: "Manage OAuth and client credentials",
+	authCmd.AddCommand(newAuthLoginCommand(notImplemented))
+	authCmd.AddCommand(newAuthAuthorizeURLCommand(notImplemented))
+	authCmd.AddCommand(newAuthExchangeCommand(notImplemented))
+	authCmd.AddCommand(newAuthRefreshCommand(notImplemented))
+	authCmd.AddCommand(newAuthStatusCommand(notImplemented))
+	authCmd.AddCommand(newAuthLogoutCommand(notImplemented))
+	authCmd.AddCommand(newAuthSetClientCommand(notImplemented))
+
+	return authCmd
 }
 
-var authLoginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Start browser OAuth flow and store tokens",
-	RunE:  notImplemented,
+func newAuthLoginCommand(notImplemented runEFunc) *cobra.Command {
+	var opts authLoginOptions
+
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	cmd := &cobra.Command{
+		Use:   "login",
+		Short: "Start browser OAuth flow and store tokens",
+		RunE:  notImplemented,
+	}
+
+	cmd.Flags().StringVar(
+		&opts.RedirectURI,
+		"redirect-uri",
+		emptyString,
+		"override redirect URI",
+	)
+	cmd.Flags().BoolVar(
+		&opts.NoOpen,
+		"no-open",
+		false,
+		"print URL instead of opening a browser",
+	)
+	cmd.Flags().StringVar(
+		&opts.Listen,
+		"listen",
+		defaultListenAddr,
+		"callback listen address",
+	)
+
+	return cmd
 }
 
-var authAuthorizeURLCmd = &cobra.Command{
-	Use:   "authorize-url",
-	Short: "Print the OAuth authorize URL",
-	RunE:  notImplemented,
+func newAuthAuthorizeURLCommand(notImplemented runEFunc) *cobra.Command {
+	var opts authAuthorizeURLOptions
+
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	cmd := &cobra.Command{
+		Use:   "authorize-url",
+		Short: "Print the OAuth authorize URL",
+		RunE:  notImplemented,
+	}
+
+	cmd.Flags().StringVar(
+		&opts.RedirectURI,
+		"redirect-uri",
+		emptyString,
+		"override redirect URI",
+	)
+	cmd.Flags().StringVar(
+		&opts.Scope,
+		"scope",
+		emptyString,
+		"override OAuth scopes (comma-separated)",
+	)
+
+	return cmd
 }
 
-var authExchangeCmd = &cobra.Command{
-	Use:   "exchange",
-	Short: "Exchange an authorization code for tokens",
-	RunE:  notImplemented,
+func newAuthExchangeCommand(notImplemented runEFunc) *cobra.Command {
+	var opts authExchangeOptions
+
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	cmd := &cobra.Command{
+		Use:   "exchange",
+		Short: "Exchange an authorization code for tokens",
+		RunE:  notImplemented,
+	}
+
+	cmd.Flags().StringVar(
+		&opts.Code,
+		"code",
+		emptyString,
+		"authorization code (otherwise read from stdin)",
+	)
+
+	return cmd
 }
 
-var authRefreshCmd = &cobra.Command{
-	Use:   "refresh",
-	Short: "Refresh the access token",
-	RunE:  notImplemented,
+func newAuthRefreshCommand(notImplemented runEFunc) *cobra.Command {
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	return &cobra.Command{
+		Use:   "refresh",
+		Short: "Refresh the access token",
+		RunE:  notImplemented,
+	}
 }
 
-var authStatusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Show token scopes and expiry",
-	RunE:  notImplemented,
+func newAuthStatusCommand(notImplemented runEFunc) *cobra.Command {
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	return &cobra.Command{
+		Use:   "status",
+		Short: "Show token scopes and expiry",
+		RunE:  notImplemented,
+	}
 }
 
-var authLogoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Delete stored tokens",
-	RunE:  notImplemented,
+func newAuthLogoutCommand(notImplemented runEFunc) *cobra.Command {
+	var opts authLogoutOptions
+
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	cmd := &cobra.Command{
+		Use:   "logout",
+		Short: "Delete stored tokens",
+		RunE:  notImplemented,
+	}
+
+	cmd.Flags().BoolVar(
+		&opts.Force,
+		"force",
+		false,
+		"skip confirmation",
+	)
+
+	return cmd
 }
 
-var authSetClientCmd = &cobra.Command{
-	Use:   "set-client",
-	Short: "Set OAuth client ID and secret",
-	RunE:  notImplemented,
-}
+func newAuthSetClientCommand(notImplemented runEFunc) *cobra.Command {
+	var opts authSetClientOptions
 
-func init() {
-	rootCmd.AddCommand(authCmd)
-	authCmd.AddCommand(authLoginCmd)
-	authCmd.AddCommand(authAuthorizeURLCmd)
-	authCmd.AddCommand(authExchangeCmd)
-	authCmd.AddCommand(authRefreshCmd)
-	authCmd.AddCommand(authStatusCmd)
-	authCmd.AddCommand(authLogoutCmd)
-	authCmd.AddCommand(authSetClientCmd)
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	cmd := &cobra.Command{
+		Use:   "set-client",
+		Short: "Set OAuth client ID and secret",
+		RunE:  notImplemented,
+	}
 
-	authLoginCmd.Flags().StringVar(&authLoginOpts.RedirectURI, "redirect-uri", "", "override redirect URI")
-	authLoginCmd.Flags().BoolVar(&authLoginOpts.NoOpen, "no-open", false, "print URL instead of opening a browser")
-	authLoginCmd.Flags().StringVar(&authLoginOpts.Listen, "listen", "127.0.0.1:9876", "callback listen address")
+	cmd.Flags().StringVar(
+		&opts.ClientID,
+		"client-id",
+		emptyString,
+		"OAuth client ID",
+	)
+	cmd.Flags().BoolVar(
+		&opts.SecretStdin,
+		"secret-stdin",
+		false,
+		"read client secret from stdin",
+	)
 
-	authAuthorizeURLCmd.Flags().StringVar(&authAuthorizeURLOpts.RedirectURI, "redirect-uri", "", "override redirect URI")
-	authAuthorizeURLCmd.Flags().StringVar(&authAuthorizeURLOpts.Scope, "scope", "", "override OAuth scopes (comma-separated)")
-
-	authExchangeCmd.Flags().StringVar(&authExchangeOpts.Code, "code", "", "authorization code (otherwise read from stdin)")
-
-	authLogoutCmd.Flags().BoolVar(&authLogoutOpts.Force, "force", false, "skip confirmation")
-
-	authSetClientCmd.Flags().StringVar(&authSetClientOpts.ClientID, "client-id", "", "OAuth client ID")
-	authSetClientCmd.Flags().BoolVar(&authSetClientOpts.SecretStdin, "secret-stdin", false, "read client secret from stdin")
+	return cmd
 }

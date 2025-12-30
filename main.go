@@ -1,7 +1,12 @@
+// Package main is the entrypoint for the withings-cli binary.
 package main
 
-import "github.com/mreimbold/withings-cli/cmd"
+import (
+	"os"
+
+	"github.com/mreimbold/withings-cli/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	os.Exit(cmd.Execute())
 }

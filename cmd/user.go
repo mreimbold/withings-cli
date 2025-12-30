@@ -2,25 +2,27 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-var userCmd = &cobra.Command{
-	Use:   "user",
-	Short: "User and profile commands",
-}
+func newUserCommand(notImplemented runEFunc) *cobra.Command {
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	userCmd := &cobra.Command{
+		Use:   "user",
+		Short: "User and profile commands",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	userMeCmd := &cobra.Command{
+		Use:   "me",
+		Short: "Show current user profile",
+		RunE:  notImplemented,
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	userListCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List linked users",
+		RunE:  notImplemented,
+	}
 
-var userMeCmd = &cobra.Command{
-	Use:   "me",
-	Short: "Show current user profile",
-	RunE:  notImplemented,
-}
-
-var userListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List linked users",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(userCmd)
 	userCmd.AddCommand(userMeCmd)
 	userCmd.AddCommand(userListCmd)
+
+	return userCmd
 }

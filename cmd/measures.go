@@ -3,36 +3,48 @@ package cmd
 import "github.com/spf13/cobra"
 
 type measuresGetOptions struct {
-	TimeRange  TimeRangeOptions
-	Pagination PaginationOptions
-	User       UserOption
-	LastUpdate LastUpdateOption
+	TimeRange  timeRangeOptions
+	Pagination paginationOptions
+	User       userOption
+	LastUpdate lastUpdateOption
 	Types      string
 	Category   string
 }
 
-var measuresGetOpts measuresGetOptions
+func newMeasuresCommand(notImplemented runEFunc) *cobra.Command {
+	var opts measuresGetOptions
 
-var measuresCmd = &cobra.Command{
-	Use:   "measures",
-	Short: "Body measures (weight, blood pressure, composition)",
-}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	measuresCmd := &cobra.Command{
+		Use:   "measures",
+		Short: "Body measures (weight, blood pressure, composition)",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	measuresGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Fetch body measures",
+		RunE:  notImplemented,
+	}
 
-var measuresGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Fetch body measures",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(measuresCmd)
 	measuresCmd.AddCommand(measuresGetCmd)
 
-	addTimeRangeFlags(measuresGetCmd, &measuresGetOpts.TimeRange)
-	addPaginationFlags(measuresGetCmd, &measuresGetOpts.Pagination)
-	addUserIDFlag(measuresGetCmd, &measuresGetOpts.User)
-	addLastUpdateFlag(measuresGetCmd, &measuresGetOpts.LastUpdate)
+	addTimeRangeFlags(measuresGetCmd, &opts.TimeRange)
+	addPaginationFlags(measuresGetCmd, &opts.Pagination)
+	addUserIDFlag(measuresGetCmd, &opts.User)
+	addLastUpdateFlag(measuresGetCmd, &opts.LastUpdate)
 
-	measuresGetCmd.Flags().StringVar(&measuresGetOpts.Types, "type", "", "measure types (comma-separated)")
-	measuresGetCmd.Flags().StringVar(&measuresGetOpts.Category, "category", "", "category: real or goal")
+	measuresGetCmd.Flags().StringVar(
+		&opts.Types,
+		"type",
+		emptyString,
+		"measure types (comma-separated)",
+	)
+	measuresGetCmd.Flags().StringVar(
+		&opts.Category,
+		"category",
+		emptyString,
+		"category: real or goal",
+	)
+
+	return measuresCmd
 }

@@ -3,36 +3,43 @@ package cmd
 import "github.com/spf13/cobra"
 
 type sleepGetOptions struct {
-	TimeRange  TimeRangeOptions
-	Date       DateOption
-	Pagination PaginationOptions
-	User       UserOption
-	LastUpdate LastUpdateOption
+	TimeRange  timeRangeOptions
+	Date       dateOption
+	Pagination paginationOptions
+	User       userOption
+	LastUpdate lastUpdateOption
 	Model      int
 }
 
-var sleepGetOpts sleepGetOptions
+func newSleepCommand(notImplemented runEFunc) *cobra.Command {
+	var opts sleepGetOptions
 
-var sleepCmd = &cobra.Command{
-	Use:   "sleep",
-	Short: "Sleep summaries",
-}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	sleepCmd := &cobra.Command{
+		Use:   "sleep",
+		Short: "Sleep summaries",
+	}
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	sleepGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Fetch sleep summaries",
+		RunE:  notImplemented,
+	}
 
-var sleepGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Fetch sleep summaries",
-	RunE:  notImplemented,
-}
-
-func init() {
-	rootCmd.AddCommand(sleepCmd)
 	sleepCmd.AddCommand(sleepGetCmd)
 
-	addTimeRangeFlags(sleepGetCmd, &sleepGetOpts.TimeRange)
-	addDateFlag(sleepGetCmd, &sleepGetOpts.Date)
-	addPaginationFlags(sleepGetCmd, &sleepGetOpts.Pagination)
-	addUserIDFlag(sleepGetCmd, &sleepGetOpts.User)
-	addLastUpdateFlag(sleepGetCmd, &sleepGetOpts.LastUpdate)
+	addTimeRangeFlags(sleepGetCmd, &opts.TimeRange)
+	addDateFlag(sleepGetCmd, &opts.Date)
+	addPaginationFlags(sleepGetCmd, &opts.Pagination)
+	addUserIDFlag(sleepGetCmd, &opts.User)
+	addLastUpdateFlag(sleepGetCmd, &opts.LastUpdate)
 
-	sleepGetCmd.Flags().IntVar(&sleepGetOpts.Model, "model", 0, "sleep model (if supported)")
+	sleepGetCmd.Flags().IntVar(
+		&opts.Model,
+		"model",
+		defaultInt,
+		"sleep model (if supported)",
+	)
+
+	return sleepCmd
 }

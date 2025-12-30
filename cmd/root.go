@@ -8,10 +8,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// version can be overridden at build time with -ldflags.
 var version = "dev"
 
-type GlobalOptions struct {
+const (
+	exitCodeSuccess = 0
+	exitCodeFailure = 1
+	exitCodeUsage   = 2
+)
+
+type globalOptions struct {
 	Verbose int
 	Quiet   bool
 	JSON    bool
@@ -23,75 +28,172 @@ type GlobalOptions struct {
 	BaseURL string
 }
 
-var globalOpts GlobalOptions
-
-type ExitError struct {
-	Code int
-	Err  error
+type exitError struct {
+	code int
+	err  error
 }
 
-func (e *ExitError) Error() string {
-	return e.Err.Error()
+func newExitError(code int, err error) *exitError {
+	return &exitError{code: code, err: err}
 }
 
-func NewExitError(code int, err error) *ExitError {
-	return &ExitError{Code: code, Err: err}
+// Error returns the wrapped error message.
+func (e *exitError) Error() string {
+	return e.err.Error()
 }
 
-var rootCmd = &cobra.Command{
-	Use:           "withings",
-	Short:         "Interact with Withings Health Solutions data and OAuth tokens from the CLI.",
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if globalOpts.JSON && globalOpts.Plain {
-			return NewExitError(2, fmt.Errorf("--json and --plain are mutually exclusive"))
-		}
-		if globalOpts.Quiet && globalOpts.Verbose > 0 {
-			return NewExitError(2, fmt.Errorf("--quiet and --verbose cannot be combined"))
-		}
-		if globalOpts.Plain {
-			globalOpts.NoColor = true
-		}
-		switch globalOpts.Cloud {
-		case "eu", "us":
-		default:
-			return NewExitError(2, fmt.Errorf("invalid --cloud %q (expected eu or us)", globalOpts.Cloud))
-		}
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Help()
-	},
+type runEFunc func(*cobra.Command, []string) error
+
+// Execute runs the CLI and returns the exit code.
+func Execute() int {
+	rootCmd := newRootCommand()
+
+	err := rootCmd.Execute()
+	if err == nil {
+		return exitCodeSuccess
+	}
+
+	code := exitCodeFailure
+
+	var exitErr *exitError
+
+	if errors.As(err, &exitErr) {
+		code = exitErr.code
+		err = exitErr.err
+	}
+
+	_, writeErr := fmt.Fprintln(os.Stderr, err)
+	if writeErr != nil {
+		return exitCodeFailure
+	}
+
+	return code
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		code := 1
-		var exitErr *ExitError
-		if errors.As(err, &exitErr) {
-			code = exitErr.Code
-			err = exitErr.Err
-		}
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(code)
+func newRootCommand() *cobra.Command {
+	var opts globalOptions
+
+	rootCmd := buildRootCommand(&opts)
+	rootCmd.Version = version
+
+	addRootCommands(rootCmd)
+	addRootFlags(rootCmd, &opts)
+
+	return rootCmd
+}
+
+func buildRootCommand(opts *globalOptions) *cobra.Command {
+	//nolint:exhaustruct // Cobra command defaults are intentional.
+	return &cobra.Command{
+		Use: "withings",
+		Short: "Interact with Withings Health Solutions " +
+			"data and OAuth tokens from the CLI.",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+			return validateGlobalOptions(opts)
+		},
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return cmd.Help()
+		},
 	}
 }
 
-func init() {
-	rootCmd.Version = version
+func validateGlobalOptions(opts *globalOptions) error {
+	if opts.JSON && opts.Plain {
+		return newExitError(exitCodeUsage, errJSONPlainConflict)
+	}
 
-	rootCmd.PersistentFlags().CountVarP(&globalOpts.Verbose, "verbose", "v", "increase diagnostic verbosity (repeatable)")
-	rootCmd.PersistentFlags().BoolVarP(&globalOpts.Quiet, "quiet", "q", false, "suppress non-error output")
-	rootCmd.PersistentFlags().BoolVar(&globalOpts.JSON, "json", false, "machine-readable JSON output")
-	rootCmd.PersistentFlags().BoolVar(&globalOpts.Plain, "plain", false, "stable line-based output (no tables, no colors)")
-	rootCmd.PersistentFlags().BoolVar(&globalOpts.NoColor, "no-color", false, "disable ANSI color")
-	rootCmd.PersistentFlags().BoolVar(&globalOpts.NoInput, "no-input", false, "disable prompts")
-	rootCmd.PersistentFlags().StringVar(&globalOpts.Config, "config", "", "config file path (optional)")
-	rootCmd.PersistentFlags().StringVar(&globalOpts.Cloud, "cloud", "eu", "API cloud: eu or us")
-	rootCmd.PersistentFlags().StringVar(&globalOpts.BaseURL, "base-url", "", "override API base URL")
+	if opts.Quiet && opts.Verbose > noVerbosity {
+		return newExitError(exitCodeUsage, errQuietVerboseConflict)
+	}
+
+	if opts.Plain {
+		opts.NoColor = true
+	}
+
+	switch opts.Cloud {
+	case "eu", "us":
+		return nil
+	default:
+		return newExitError(
+			exitCodeUsage,
+			fmt.Errorf("%w: %q", errInvalidCloud, opts.Cloud),
+		)
+	}
 }
 
-func notImplemented(cmd *cobra.Command, _ []string) error {
-	return NewExitError(1, fmt.Errorf("not implemented: %s", cmd.CommandPath()))
+func addRootCommands(rootCmd *cobra.Command) {
+	rootCmd.AddCommand(newActivityCommand(notImplementedHandler))
+	rootCmd.AddCommand(newAPICommand(notImplementedHandler))
+	rootCmd.AddCommand(newAuthCommand(notImplementedHandler))
+	rootCmd.AddCommand(newHeartCommand(notImplementedHandler))
+	rootCmd.AddCommand(newMeasuresCommand(notImplementedHandler))
+	rootCmd.AddCommand(newSleepCommand(notImplementedHandler))
+	rootCmd.AddCommand(newUserCommand(notImplementedHandler))
+}
+
+func addRootFlags(rootCmd *cobra.Command, opts *globalOptions) {
+	rootCmd.PersistentFlags().CountVarP(
+		&opts.Verbose,
+		"verbose",
+		"v",
+		"increase diagnostic verbosity (repeatable)",
+	)
+	rootCmd.PersistentFlags().BoolVarP(
+		&opts.Quiet,
+		"quiet",
+		"q",
+		false,
+		"suppress non-error output",
+	)
+	rootCmd.PersistentFlags().BoolVar(
+		&opts.JSON,
+		"json",
+		false,
+		"machine-readable JSON output",
+	)
+	rootCmd.PersistentFlags().BoolVar(
+		&opts.Plain,
+		"plain",
+		false,
+		"stable line-based output (no tables, no colors)",
+	)
+	rootCmd.PersistentFlags().BoolVar(
+		&opts.NoColor,
+		"no-color",
+		false,
+		"disable ANSI color",
+	)
+	rootCmd.PersistentFlags().BoolVar(
+		&opts.NoInput,
+		"no-input",
+		false,
+		"disable prompts",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&opts.Config,
+		"config",
+		emptyString,
+		"config file path (optional)",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&opts.Cloud,
+		"cloud",
+		defaultCloud,
+		"API cloud: eu or us",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&opts.BaseURL,
+		"base-url",
+		emptyString,
+		"override API base URL",
+	)
+}
+
+func notImplementedHandler(cmd *cobra.Command, _ []string) error {
+	return newExitError(
+		exitCodeFailure,
+		fmt.Errorf("%w: %s", errNotImplemented, cmd.CommandPath()),
+	)
 }
