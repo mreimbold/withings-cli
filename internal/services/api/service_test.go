@@ -1,4 +1,4 @@
-//nolint:testpackage // test unexported helpers.
+//nolint:testpackage,revive // test unexported helpers; package name matches Withings API endpoint.
 package api
 
 import (

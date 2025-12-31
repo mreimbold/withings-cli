@@ -1,5 +1,5 @@
 // Package api provides the generic API passthrough command.
-package api //nolint:revive // Package name matches the Withings API endpoint.
+package api
 
 import (
 	"bytes"
