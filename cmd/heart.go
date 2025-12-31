@@ -10,7 +10,7 @@ type heartGetOptions struct {
 	Signal     bool
 }
 
-func newHeartCommand(notImplemented runEFunc) *cobra.Command {
+func newHeartCommand() *cobra.Command {
 	var opts heartGetOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
@@ -22,7 +22,9 @@ func newHeartCommand(notImplemented runEFunc) *cobra.Command {
 	heartGetCmd := &cobra.Command{
 		Use:   "get",
 		Short: "Fetch heart data",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runHeartGet(cmd, opts)
+		},
 	}
 
 	heartCmd.AddCommand(heartGetCmd)

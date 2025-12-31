@@ -99,6 +99,9 @@ withings [global flags] <subcommand> [args]
 ### heart
 - `withings heart get`
   - flags: `--start/--end`, `--signal` (include signal metadata if available)
+  - behavior: idempotent, read-only
+  - table output columns: `time`, `heart_rate`, `model`, `device`, `signal_id`, `ecg`, `afib`, `signal`
+  - `--plain` outputs tab-separated lines with a header row
 
 ### user
 - `withings user me` show current user profile

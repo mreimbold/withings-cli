@@ -130,7 +130,7 @@ func addRootCommands(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(newActivityCommand(notImplementedHandler))
 	rootCmd.AddCommand(newAPICommand())
 	rootCmd.AddCommand(newAuthCommand())
-	rootCmd.AddCommand(newHeartCommand(notImplementedHandler))
+	rootCmd.AddCommand(newHeartCommand())
 	rootCmd.AddCommand(newMeasuresCommand())
 	rootCmd.AddCommand(newSleepCommand(notImplementedHandler))
 	rootCmd.AddCommand(newUserCommand(notImplementedHandler))
