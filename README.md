@@ -36,7 +36,7 @@ Token refresh happens automatically when needed.
 
 ### Callback URL
 
-Default callback URL: `http://127.0.0.1:9876/callback`
+Default callback URL: <http://127.0.0.1:9876/callback>
 
 You can override the listener with:
 
@@ -46,8 +46,8 @@ You can override the listener with:
 
 ### Developer Dashboard
 
-Create your app (Client ID/Secret) in the Withings Developer Dashboard:
-`https://developer.withings.com/dashboard/`
+Create your app (Client ID/Secret) in the
+[Withings Developer Dashboard](https://developer.withings.com/dashboard/).
 
 
 ## Config and env
