@@ -23,8 +23,21 @@ linters:
             - $all
           allow:
             - $gostd
-            - github.com/mreimbold/withings-cli/internal/cmd
+            - github.com/mreimbold/withings-cli/internal/app
+            - github.com/mreimbold/withings-cli/internal/auth
+            - github.com/mreimbold/withings-cli/internal/cli
+            - github.com/mreimbold/withings-cli/internal/errs
+            - github.com/mreimbold/withings-cli/internal/filters
+            - github.com/mreimbold/withings-cli/internal/output
+            - github.com/mreimbold/withings-cli/internal/params
+            - github.com/mreimbold/withings-cli/internal/services/activity
+            - github.com/mreimbold/withings-cli/internal/services/api
+            - github.com/mreimbold/withings-cli/internal/services/heart
+            - github.com/mreimbold/withings-cli/internal/services/measures
+            - github.com/mreimbold/withings-cli/internal/services/sleep
+            - github.com/mreimbold/withings-cli/internal/withings
             - github.com/spf13/cobra
+            - github.com/spf13/pflag
 
     gocyclo:
       min-complexity: 10

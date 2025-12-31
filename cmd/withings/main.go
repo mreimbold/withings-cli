@@ -4,9 +4,9 @@ package main
 import (
 	"os"
 
-	"github.com/mreimbold/withings-cli/internal/cmd"
+	"github.com/mreimbold/withings-cli/internal/cli"
 )
 
 func main() {
-	os.Exit(cmd.Execute())
+	os.Exit(cli.Execute())
 }
