@@ -1,6 +1,45 @@
 # Withings CLI
 
-Withings CLI for interacting with Withings Health Solutions data and OAuth tokens.
+Pull your Withings health data (weight, blood pressure, sleep, activity) from the command line. Handles OAuth automatically—just run `auth login` once and start querying.
+
+## Quick Start
+
+```bash
+# 1. Build
+make build
+
+# 2. Set credentials (from developer.withings.com/dashboard)
+export WITHINGS_CLIENT_ID=your_client_id
+export WITHINGS_CLIENT_SECRET=your_client_secret
+
+# 3. Login (opens browser, completes OAuth)
+./withings-cli auth login
+
+# 4. Fetch your data
+./withings-cli measures get --type weight --start 2025-12-01
+```
+
+## What You Get
+
+```
+$ ./withings-cli measures get --type weight,bp_sys,bp_dia --start 2025-12-01
+┌────────────┬────────┬────────┬────────┐
+│ Date       │ Weight │ BP Sys │ BP Dia │
+├────────────┼────────┼────────┼────────┤
+│ 2025-12-15 │ 72.3kg │ 120    │ 80     │
+│ 2025-12-08 │ 72.1kg │ 118    │ 78     │
+└────────────┴────────┴────────┴────────┘
+
+$ ./withings-cli sleep get --start 2025-12-01 --end 2025-12-07
+┌────────────┬──────────┬───────────┬─────────────┐
+│ Date       │ Duration │ Deep      │ REM         │
+├────────────┼──────────┼───────────┼─────────────┤
+│ 2025-12-07 │ 7h 23m   │ 1h 45m    │ 1h 52m      │
+│ 2025-12-06 │ 6h 58m   │ 1h 32m    │ 1h 41m      │
+└────────────┴──────────┴───────────┴─────────────┘
+```
+
+Output formats: tables (default), `--json`, or `--plain`.
 
 ## Highlights
 
@@ -9,39 +48,12 @@ Withings CLI for interacting with Withings Health Solutions data and OAuth token
 - Output formats: tables (default), `--json`, or `--plain`
 - Low-level API escape hatch for new endpoints
 
-## Overview
-
-Withings CLI is a small command-line tool that pulls data from the
-Withings API and manages OAuth tokens. The full CLI contract lives in
-[`docs/cli-spec.md`](docs/cli-spec.md).
-
-### ✍️ Author
-
-This project is 100% written by AI.
-
-### Requirements
+## Requirements
 
 - Go 1.25.4
-- Withings developer app credentials (Client ID/Secret)
+- Withings developer app credentials ([create them here](https://developer.withings.com/dashboard/))
 
-### Developer Dashboard
-
-Create your app (Client ID/Secret) in the
-[Withings Developer Dashboard](https://developer.withings.com/dashboard/).
-
-## Usage instructions
-
-```bash
-./withings-cli auth login
-./withings-cli measures get --type weight,bp_sys,bp_dia --start 2025-12-23 --end 2025-12-30
-./withings-cli activity get --date 2025-12-29 --json
-./withings-cli sleep get --start 2025-12-01 --end 2025-12-31 --plain
-./withings-cli heart get --start 2025-12-23 --end 2025-12-30
-```
-
-## Installation instructions
-
-From source:
+## Installation
 
 ```bash
 make build
@@ -87,6 +99,8 @@ Core commands:
 - `heart` heart data
 - `api` low-level escape hatch
 
+Full CLI specification: [`docs/cli-spec.md`](docs/cli-spec.md)
+
 ## Development
 
 ```bash
@@ -97,6 +111,8 @@ make build
 ```
 
 ## Credits
+
+This project is 100% written by AI.
 
 Inspired by Peter Steinberg's "Just talk to it" (section "What about MCPs").
 Reference: <https://steipete.me/posts/just-talk-to-it#what-about-mcps>
