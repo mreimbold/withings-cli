@@ -34,6 +34,17 @@ credentials from the environment:
 
 Token refresh happens automatically when needed.
 
+### Callback URL
+
+Default callback URL: `http://127.0.0.1:9876/callback`
+
+You can override the listener with:
+
+```bash
+./withings-cli auth login --listen 127.0.0.1:9876
+```
+
+
 ## Config and env
 
 Precedence: flags > env > project config > user config.

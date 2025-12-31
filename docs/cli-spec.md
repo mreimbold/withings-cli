@@ -59,6 +59,7 @@ withings [global flags] <subcommand> [args]
   - requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`
   - exchanges the authorization code and stores tokens automatically
   - flags: `--redirect-uri <uri>`, `--no-open`, `--listen <addr:port>`
+  - default callback URL: `http://127.0.0.1:9876/callback`
 - `withings auth status` show token age/scopes/expiry
 - `withings auth logout` delete stored tokens (requires confirmation or `--force`)
 - access tokens are refreshed automatically when expired (requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`)
