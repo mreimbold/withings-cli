@@ -1,7 +1,7 @@
 # Withings CLI Spec
 
 ## Name + One-liner
-- Name: `withings`
+- Name: `Withings CLI`
 - One-liner: Interact with Withings Health Solutions data and OAuth tokens from the CLI.
 
 ## Usage

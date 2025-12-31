@@ -1,4 +1,4 @@
-// Package main is the entrypoint for the withings-cli binary.
+// Package main is the entrypoint for the Withings CLI binary.
 package main
 
 import (

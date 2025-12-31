@@ -1,6 +1,6 @@
-# withings-cli
+# Withings CLI
 
-CLI for interacting with Withings Health Solutions data and OAuth tokens.
+Withings CLI for interacting with Withings Health Solutions data and OAuth tokens.
 
 ## Highlights
 
@@ -11,7 +11,7 @@ CLI for interacting with Withings Health Solutions data and OAuth tokens.
 
 ## Overview
 
-`withings-cli` is a small command-line tool that pulls data from the
+Withings CLI is a small command-line tool that pulls data from the
 Withings API and manages OAuth tokens. The full CLI contract lives in
 [`docs/cli-spec.md`](docs/cli-spec.md).
 

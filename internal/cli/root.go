@@ -54,7 +54,7 @@ func buildRootCommand(opts *app.Options) *cobra.Command {
 	return &cobra.Command{
 		Use: "withings",
 		Short: "Interact with Withings Health Solutions " +
-			"data and OAuth tokens from the CLI.",
+			"data and OAuth tokens from Withings CLI.",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
