@@ -59,12 +59,20 @@ func TestUsableAccessTokenEmpty(t *testing.T) {
 	}
 }
 
-// TestUsableAccessTokenEnv keeps env tokens even if expired.
+// TestUsableAccessTokenEnv respects expiry for env tokens.
 func TestUsableAccessTokenEnv(t *testing.T) {
 	t.Parallel()
 
+	future := time.Now().Add(1 * time.Hour)
 	past := time.Now().Add(-1 * time.Hour)
-	state := tokenState{
+	valid := tokenState{
+		AccessToken:   testTokenEnv,
+		AccessSource:  testSourceEnv,
+		RefreshToken:  emptyString,
+		RefreshSource: emptyString,
+		ExpiresAt:     future,
+	}
+	expired := tokenState{
 		AccessToken:   testTokenEnv,
 		AccessSource:  testSourceEnv,
 		RefreshToken:  emptyString,
@@ -72,9 +80,12 @@ func TestUsableAccessTokenEnv(t *testing.T) {
 		ExpiresAt:     past,
 	}
 
-	got := usableAccessToken(state)
-	if got != testTokenEnv {
+	if got := usableAccessToken(valid); got != testTokenEnv {
 		t.Fatalf(testGotWantFormat, got, testTokenEnv)
+	}
+
+	if got := usableAccessToken(expired); got != emptyString {
+		t.Fatalf(testGotWantFormat, got, emptyString)
 	}
 }
 

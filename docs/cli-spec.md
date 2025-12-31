@@ -68,6 +68,7 @@ withings [global flags] <subcommand> [args]
 - `withings auth status` show token age/scopes/expiry
 - `withings auth logout` delete stored tokens (requires confirmation or `--force`)
 - access tokens are refreshed automatically when expired (requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`)
+- refresh checks expiry even if `WITHINGS_ACCESS_TOKEN` is set; a refresh token must be available
 
 ## Data commands (common flags)
 - common flags: `--start <rfc3339|epoch>`, `--end <rfc3339|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`
@@ -83,7 +84,9 @@ withings [global flags] <subcommand> [args]
       `hydration`, `bone_mass`, `pulse_wave_velocity` (or numeric IDs)
   - `--category <real|goal|1|2>`
   - `--last-update` cannot be combined with `--start` or `--end`
-  - behavior: idempotent, read-only; output is raw API JSON (table output TBD)
+  - behavior: idempotent, read-only
+  - table output columns: `time`, `type`, `value`, `unit`, `category`
+  - `--plain` outputs tab-separated lines with a header row
 
 ### activity
 - `withings activity get`

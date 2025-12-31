@@ -51,10 +51,6 @@ func usableAccessToken(state tokenState) string {
 		return emptyString
 	}
 
-	if state.AccessSource == "env" {
-		return state.AccessToken
-	}
-
 	if shouldRefresh(state.ExpiresAt) {
 		return emptyString
 	}

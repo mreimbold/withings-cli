@@ -40,6 +40,8 @@ const (
 	oauthStateKey           = "state"
 	tokenRequestTimeout     = 30 * time.Second
 	withingsStatusOK        = 0
+	tokenNullLiteral        = "null"
+	tokenQuoteByte          = '"'
 )
 
 type tokenResponse struct {
@@ -49,14 +51,50 @@ type tokenResponse struct {
 	Detail string    `json:"detail"`
 }
 
+type tokenUserID string
+
+// UnmarshalJSON accepts string or numeric user IDs from Withings.
+func (u *tokenUserID) UnmarshalJSON(data []byte) error {
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == emptyString || trimmed == tokenNullLiteral {
+		*u = emptyString
+
+		return nil
+	}
+
+	if trimmed[defaultInt] == tokenQuoteByte {
+		var value string
+
+		err := json.Unmarshal(data, &value)
+		if err != nil {
+			return fmt.Errorf("%w: %w", errTokenUserIDDecode, err)
+		}
+
+		*u = tokenUserID(value)
+
+		return nil
+	}
+
+	var value json.Number
+
+	err := json.Unmarshal(data, &value)
+	if err != nil {
+		return fmt.Errorf("%w: %w", errTokenUserIDType, err)
+	}
+
+	*u = tokenUserID(value.String())
+
+	return nil
+}
+
 //nolint:tagliatelle // Withings API uses snake_case JSON fields.
 type tokenBody struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiresIn    int64  `json:"expires_in"`
-	TokenType    string `json:"token_type"`
-	Scope        string `json:"scope"`
-	UserID       string `json:"userid"`
+	AccessToken  string      `json:"access_token"`
+	RefreshToken string      `json:"refresh_token"`
+	ExpiresIn    int64       `json:"expires_in"`
+	TokenType    string      `json:"token_type"`
+	Scope        string      `json:"scope"`
+	UserID       tokenUserID `json:"userid"`
 }
 
 func buildAuthorizeURL(

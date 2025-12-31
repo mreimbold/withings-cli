@@ -314,7 +314,7 @@ func persistTokens(config *configFile, token tokenBody) error {
 
 	config.Set(configKeyTokenType, token.TokenType)
 	config.Set(configKeyScope, token.Scope)
-	config.Set(configKeyUserID, token.UserID)
+	config.Set(configKeyUserID, string(token.UserID))
 	config.Set(configKeyTokenExpiresAt, expiresAt.Format(time.RFC3339))
 	config.Set(configKeyTokenObtained, obtainedAt.Format(time.RFC3339))
 

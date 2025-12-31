@@ -15,4 +15,6 @@ var (
 	errStateMismatch      = errors.New("state mismatch")
 	errTokenRequestFailed = errors.New("token request failed")
 	errWithingsAPI        = errors.New("withings API error")
+	errTokenUserIDType    = errors.New("userid must be string or number")
+	errTokenUserIDDecode  = errors.New("decode userid")
 )

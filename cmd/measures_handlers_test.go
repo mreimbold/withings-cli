@@ -15,8 +15,6 @@ const (
 	measureTypeWeightID     = "1"
 	measureTypeBPSysID      = "10"
 	measureTypeDedup        = "bodyweight"
-	measureCategoryRealText = "real"
-	measureCategoryGoalText = "goal"
 	measureCategoryRealID   = "1"
 	measureCategoryGoalID   = "2"
 	testParseCategoryErrFmt = "parseMeasureCategory: %v"
@@ -31,6 +29,31 @@ const (
 	testLimitValue          = 100
 	testOffsetValue         = 10
 	testFirstIndex          = 0
+	testScaleNoValue        = int64(120)
+	testScaleNoUnit         = 0
+	testScaleNoWant         = "120"
+	testScalePositiveValue  = int64(123)
+	testScalePositiveUnit   = 2
+	testScalePositiveWant   = "12300"
+	testScaleNegativeValue  = int64(84500)
+	testScaleNegativeUnit   = -3
+	testScaleNegativeWant   = "84.5"
+	testScaleSmallValue     = int64(5)
+	testScaleSmallUnit      = -3
+	testScaleSmallWant      = "0.005"
+	testScaleTrimValue      = int64(1000)
+	testScaleTrimUnit       = -3
+	testScaleTrimWant       = "1"
+	testScaleNegValue       = int64(-123)
+	testScaleNegUnit        = -2
+	testScaleNegWant        = "-1.23"
+	testMeasureRowCount     = 1
+	testMeasureCategory     = 1
+	testMeasureType         = 10
+	testMeasureValue        = int64(1200)
+	testMeasureUnit         = -1
+	testMeasureExpectedTime = "2025-12-30T00:00:00Z"
+	testMeasureExpectedUnit = "mmHg"
 )
 
 // TestParseMeasureCategory accepts text and numeric values.
@@ -228,5 +251,115 @@ func TestBuildMeasureParamsMapsFields(t *testing.T) {
 			gotValues[testFirstIndex] != wantValues[testFirstIndex] {
 			t.Fatalf(testParamGotFmt, key, gotValues, wantValues)
 		}
+	}
+}
+
+// TestFormatScaledValue covers scaling math.
+func TestFormatScaledValue(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name  string
+		value int64
+		unit  int
+		want  string
+	}{
+		{
+			name:  "no-scale",
+			value: testScaleNoValue,
+			unit:  testScaleNoUnit,
+			want:  testScaleNoWant,
+		},
+		{
+			name:  "positive-scale",
+			value: testScalePositiveValue,
+			unit:  testScalePositiveUnit,
+			want:  testScalePositiveWant,
+		},
+		{
+			name:  "negative-scale",
+			value: testScaleNegativeValue,
+			unit:  testScaleNegativeUnit,
+			want:  testScaleNegativeWant,
+		},
+		{
+			name:  "small-negative",
+			value: testScaleSmallValue,
+			unit:  testScaleSmallUnit,
+			want:  testScaleSmallWant,
+		},
+		{
+			name:  "trim-zeros",
+			value: testScaleTrimValue,
+			unit:  testScaleTrimUnit,
+			want:  testScaleTrimWant,
+		},
+		{
+			name:  "negative-value",
+			value: testScaleNegValue,
+			unit:  testScaleNegUnit,
+			want:  testScaleNegWant,
+		},
+	}
+
+	for _, test := range cases {
+		if got := formatScaledValue(test.value, test.unit); got != test.want {
+			t.Fatalf("%s got %q want %q", test.name, got, test.want)
+		}
+	}
+}
+
+// TestBuildMeasureRows builds a row per measure entry.
+func TestBuildMeasureRows(t *testing.T) {
+	t.Parallel()
+
+	rows := buildMeasureRows(testMeasureBody())
+	assertSingleMeasureRow(t, rows)
+}
+
+func testMeasureBody() measuresBody {
+	epoch := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
+
+	return measuresBody{
+		UpdateTime: defaultInt64,
+		Timezone:   "UTC",
+		MeasureGroups: []measureGroup{
+			{
+				GroupID:  defaultInt64,
+				Attrib:   defaultInt,
+				Date:     epoch,
+				Category: testMeasureCategory,
+				Measures: []measureItem{
+					{
+						Type:  testMeasureType,
+						Value: testMeasureValue,
+						Unit:  testMeasureUnit,
+					},
+				},
+			},
+		},
+	}
+}
+
+func assertSingleMeasureRow(t *testing.T, rows []measureRow) {
+	t.Helper()
+
+	if len(rows) != testMeasureRowCount {
+		t.Fatalf("rows got %d want %d", len(rows), testMeasureRowCount)
+	}
+
+	row := rows[testFirstIndex]
+	assertMeasureValue(t, "time", row.Time, testMeasureExpectedTime)
+	assertMeasureValue(t, "type", row.Type, measureTypeBPSys)
+	assertMeasureValue(t, "value", row.Value, testScaleNoWant)
+	assertMeasureValue(t, "unit", row.Unit, testMeasureExpectedUnit)
+	assertMeasureValue(t, "category", row.Category, measureCategoryRealText)
+}
+
+func assertMeasureValue(t *testing.T, label, got, want string) {
+	t.Helper()
+
+	if got != want {
+		t.Fatalf("%s got %q want %q", label, got, want)
 	}
 }
