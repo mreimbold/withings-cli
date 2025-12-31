@@ -86,4 +86,4 @@ make build
 ## Credits
 
 Inspired by Peter Steinberg's "Just talk to it" (section "What about MCPs").
-Reference: `https://steipete.me/posts/just-talk-to-it#what-about-mcps`
+Reference: <https://steipete.me/posts/just-talk-to-it#what-about-mcps>
