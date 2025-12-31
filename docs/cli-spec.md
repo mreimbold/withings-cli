@@ -45,17 +45,12 @@ withings [global flags] <subcommand> [args]
 - `5` API error (non-2xx or Withings error code)
 
 ## Config / env / precedence
-- precedence: flags > env > project config > user config > system
+- precedence: flags > project config > user config > system
 - user config: `~/.config/withings-cli/config.toml`
 - project config (optional): `./withings-cli.toml`
 - env vars:
   - `WITHINGS_CLIENT_ID`
   - `WITHINGS_CLIENT_SECRET` (secret; prefer env or prompt)
-  - `WITHINGS_REDIRECT_URI`
-  - `WITHINGS_ACCESS_TOKEN` (optional override)
-  - `WITHINGS_REFRESH_TOKEN` (optional override)
-  - `WITHINGS_CLOUD` (`eu` or `us`)
-  - `WITHINGS_BASE_URL` (advanced override)
 - client credentials are read from env only; the CLI does not store them in config files
 
 ## Auth commands
@@ -67,7 +62,6 @@ withings [global flags] <subcommand> [args]
 - `withings auth status` show token age/scopes/expiry
 - `withings auth logout` delete stored tokens (requires confirmation or `--force`)
 - access tokens are refreshed automatically when expired (requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`)
-- refresh checks expiry even if `WITHINGS_ACCESS_TOKEN` is set; a refresh token must be available
 
 ## Data commands (common flags)
 - common flags: `--start <rfc3339|epoch>`, `--end <rfc3339|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`

@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"os"
 	"time"
 
 	"github.com/mreimbold/withings-cli/internal/app"
@@ -106,13 +105,11 @@ func refreshAccessToken(
 
 func buildTokenState(projectConfig, userConfig *configFile) tokenState {
 	accessToken := resolveValueSource(
-		os.Getenv(envAccessToken),
 		projectConfig.Value(configKeyAccessToken),
 		userConfig.Value(configKeyAccessToken),
 	)
 
 	refreshToken := resolveValueSource(
-		os.Getenv(envRefreshToken),
 		projectConfig.Value(configKeyRefreshToken),
 		userConfig.Value(configKeyRefreshToken),
 	)

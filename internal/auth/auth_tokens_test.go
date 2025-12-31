@@ -4,7 +4,10 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,15 +15,16 @@ import (
 )
 
 const (
-	testSourceEnv       = "env"
-	testSourceUser      = "user"
-	testTokenEnv        = "env-token"
-	testTokenEnvAccess  = "env-access"
-	testTokenEnvRefresh = "env-refresh"
-	testTokenUser       = "usertoken"
-	testGotWantFormat   = "got %q want %q"
-	testExitErrFormat   = "expected exitError, got %T"
-	testExitCodeFormat  = "exit code got %d want %d"
+	testSourceProject       = "project"
+	testSourceUser          = "user"
+	testTokenProject        = "project-token"
+	testTokenProjectRefresh = "project-refresh"
+	testTokenUserAccess     = "user-access"
+	testTokenUserRefresh    = "user-refresh"
+	testTokenUser           = "usertoken"
+	testGotWantFormat       = "got %q want %q"
+	testExitErrFormat       = "expected exitError, got %T"
+	testExitCodeFormat      = "exit code got %d want %d"
 )
 
 // TestShouldRefresh validates expiry decisions.
@@ -49,7 +53,7 @@ func TestUsableAccessTokenEmpty(t *testing.T) {
 	future := time.Now().Add(1 * time.Hour)
 	state := tokenState{
 		AccessToken:   emptyString,
-		AccessSource:  testSourceEnv,
+		AccessSource:  testSourceProject,
 		RefreshToken:  emptyString,
 		RefreshSource: emptyString,
 		ExpiresAt:     future,
@@ -61,29 +65,29 @@ func TestUsableAccessTokenEmpty(t *testing.T) {
 	}
 }
 
-// TestUsableAccessTokenEnv respects expiry for env tokens.
-func TestUsableAccessTokenEnv(t *testing.T) {
+// TestUsableAccessTokenProject respects expiry for project tokens.
+func TestUsableAccessTokenProject(t *testing.T) {
 	t.Parallel()
 
 	future := time.Now().Add(1 * time.Hour)
 	past := time.Now().Add(-1 * time.Hour)
 	valid := tokenState{
-		AccessToken:   testTokenEnv,
-		AccessSource:  testSourceEnv,
+		AccessToken:   testTokenProject,
+		AccessSource:  testSourceProject,
 		RefreshToken:  emptyString,
 		RefreshSource: emptyString,
 		ExpiresAt:     future,
 	}
 	expired := tokenState{
-		AccessToken:   testTokenEnv,
-		AccessSource:  testSourceEnv,
+		AccessToken:   testTokenProject,
+		AccessSource:  testSourceProject,
 		RefreshToken:  emptyString,
 		RefreshSource: emptyString,
 		ExpiresAt:     past,
 	}
 
-	if got := usableAccessToken(valid); got != testTokenEnv {
-		t.Fatalf(testGotWantFormat, got, testTokenEnv)
+	if got := usableAccessToken(valid); got != testTokenProject {
+		t.Fatalf(testGotWantFormat, got, testTokenProject)
 	}
 
 	if got := usableAccessToken(expired); got != emptyString {
@@ -121,18 +125,17 @@ func TestUsableAccessTokenUser(t *testing.T) {
 	}
 }
 
-// TestBuildTokenStatePrefersEnv verifies env precedence.
-func TestBuildTokenStatePrefersEnv(t *testing.T) {
-	t.Setenv(envAccessToken, testTokenEnvAccess)
-	t.Setenv(envRefreshToken, testTokenEnvRefresh)
+// TestBuildTokenStatePrefersProject verifies project precedence.
+func TestBuildTokenStatePrefersProject(t *testing.T) {
+	t.Parallel()
 
 	projectConfig := testConfigFile(map[string]string{
-		configKeyAccessToken:  "project-access",
-		configKeyRefreshToken: "project-refresh",
+		configKeyAccessToken:  testTokenProject,
+		configKeyRefreshToken: testTokenProjectRefresh,
 	})
 	userConfig := testConfigFile(map[string]string{
-		configKeyAccessToken:  "user-access",
-		configKeyRefreshToken: "user-refresh",
+		configKeyAccessToken:  testTokenUserAccess,
+		configKeyRefreshToken: testTokenUserRefresh,
 		configKeyTokenExpiresAt: time.Now().
 			Add(2 * time.Hour).
 			UTC().
@@ -140,20 +143,20 @@ func TestBuildTokenStatePrefersEnv(t *testing.T) {
 	})
 
 	state := buildTokenState(projectConfig, userConfig)
-	if state.AccessToken != testTokenEnvAccess {
-		t.Fatalf("access got %q want %q", state.AccessToken, testTokenEnvAccess)
+	if state.AccessToken != testTokenProject {
+		t.Fatalf("access got %q want %q", state.AccessToken, testTokenProject)
 	}
 
-	if state.RefreshToken != testTokenEnvRefresh {
+	if state.RefreshToken != testTokenProjectRefresh {
 		t.Fatalf(
 			"refresh got %q want %q",
 			state.RefreshToken,
-			testTokenEnvRefresh,
+			testTokenProjectRefresh,
 		)
 	}
 
-	if state.AccessSource != testSourceEnv ||
-		state.RefreshSource != testSourceEnv {
+	if state.AccessSource != testSourceProject ||
+		state.RefreshSource != testSourceProject {
 		t.Fatalf(
 			"unexpected sources: %s/%s",
 			state.AccessSource,
@@ -166,26 +169,35 @@ func TestBuildTokenStatePrefersEnv(t *testing.T) {
 	}
 }
 
-// TestEnsureAccessTokenEnv returns env tokens without refresh.
-func TestEnsureAccessTokenEnv(t *testing.T) {
-	t.Setenv(envAccessToken, testTokenEnv)
+// TestEnsureAccessTokenConfig returns stored tokens without refresh.
+func TestEnsureAccessTokenConfig(t *testing.T) {
+	t.Parallel()
 
-	opts := testAppOptions(filepath.Join(t.TempDir(), "config.toml"))
+	configPath := filepath.Join(t.TempDir(), "config.toml")
+
+	err := writeConfigFile(configPath, map[string]string{
+		configKeyAccessToken: testTokenUser,
+	})
+	if err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+
+	opts := testAppOptions(configPath)
 
 	token, err := EnsureAccessToken(context.Background(), opts)
 	if err != nil {
 		t.Fatalf("ensureAccessToken: %v", err)
 	}
 
-	if token != testTokenEnv {
-		t.Fatalf(testGotWantFormat, token, testTokenEnv)
+	if token != testTokenUser {
+		t.Fatalf(testGotWantFormat, token, testTokenUser)
 	}
 }
 
 // TestEnsureAccessTokenRequiresAuth fails without stored tokens.
-//
-//nolint:paralleltest // Reads env and must not race with Setenv tests.
 func TestEnsureAccessTokenRequiresAuth(t *testing.T) {
+	t.Parallel()
+
 	opts := testAppOptions(filepath.Join(t.TempDir(), "config.toml"))
 
 	_, err := EnsureAccessToken(context.Background(), opts)
@@ -254,4 +266,20 @@ func testConfigFile(values map[string]string) *configFile {
 		KeyIndex: map[string]int{},
 		Exists:   false,
 	}
+}
+
+func writeConfigFile(path string, values map[string]string) error {
+	lines := make([]string, defaultInt, len(values))
+	for key, value := range values {
+		lines = append(lines, key+` = "`+value+`"`)
+	}
+
+	data := []byte(strings.Join(lines, "\n") + "\n")
+
+	err := os.WriteFile(path, data, configFileMode)
+	if err != nil {
+		return fmt.Errorf("write config: %w", err)
+	}
+
+	return nil
 }

@@ -374,19 +374,16 @@ type authStatus struct {
 
 func buildAuthStatus(projectConfig, userConfig *configFile) authStatus {
 	accessToken := resolveValueSource(
-		os.Getenv(envAccessToken),
 		projectConfig.Value(configKeyAccessToken),
 		userConfig.Value(configKeyAccessToken),
 	)
 
 	refreshToken := resolveValueSource(
-		os.Getenv(envRefreshToken),
 		projectConfig.Value(configKeyRefreshToken),
 		userConfig.Value(configKeyRefreshToken),
 	)
 
 	scope := resolveValue(
-		emptyString,
 		emptyString,
 		projectConfig.Value(configKeyScope),
 		userConfig.Value(configKeyScope),
@@ -394,13 +391,11 @@ func buildAuthStatus(projectConfig, userConfig *configFile) authStatus {
 
 	tokenType := resolveValue(
 		emptyString,
-		emptyString,
 		projectConfig.Value(configKeyTokenType),
 		userConfig.Value(configKeyTokenType),
 	)
 
 	userID := resolveValue(
-		emptyString,
 		emptyString,
 		projectConfig.Value(configKeyUserID),
 		userConfig.Value(configKeyUserID),
@@ -468,7 +463,6 @@ func resolveAuthConfig(redirectOverride string) authClientConfig {
 		ClientSecret: os.Getenv(envClientSecret),
 		RedirectURI: resolveValue(
 			redirectOverride,
-			os.Getenv(envRedirectURI),
 			emptyString,
 			emptyString,
 		),
@@ -572,13 +566,9 @@ func startAuthServer(listenAddr, path, state string) authServer {
 	}
 }
 
-func resolveValue(flagValue, envValue, projectValue, userValue string) string {
+func resolveValue(flagValue, projectValue, userValue string) string {
 	if flagValue != emptyString {
 		return flagValue
-	}
-
-	if envValue != emptyString {
-		return envValue
 	}
 
 	if projectValue != emptyString {
@@ -593,15 +583,7 @@ type resolvedValue struct {
 	Source string
 }
 
-func resolveValueSource(
-	envValue string,
-	projectValue string,
-	userValue string,
-) resolvedValue {
-	if envValue != emptyString {
-		return resolvedValue{Value: envValue, Source: "env"}
-	}
-
+func resolveValueSource(projectValue string, userValue string) resolvedValue {
 	if projectValue != emptyString {
 		return resolvedValue{Value: projectValue, Source: "project"}
 	}
