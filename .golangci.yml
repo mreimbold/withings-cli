@@ -23,7 +23,7 @@ linters:
             - $all
           allow:
             - $gostd
-            - github.com/mreimbold/withings-cli/cmd
+            - github.com/mreimbold/withings-cli/internal/cmd
             - github.com/spf13/cobra
 
     gocyclo:

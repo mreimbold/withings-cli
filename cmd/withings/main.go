@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	"github.com/mreimbold/withings-cli/cmd"
+	"github.com/mreimbold/withings-cli/internal/cmd"
 )
 
 func main() {
