@@ -87,3 +87,7 @@ make build
 
 Inspired by Peter Steinberg's "Just talk to it" (section "What about MCPs").
 Reference: <https://steipete.me/posts/just-talk-to-it#what-about-mcps>
+
+## AI authorship
+
+This project is 100% written by AI.
