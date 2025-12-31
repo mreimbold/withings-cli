@@ -11,7 +11,6 @@ withings [global flags] <subcommand> [args]
 
 ## Subcommands
 - `withings auth ...` manage OAuth tokens
-- `withings user ...` user/profile lookups
 - `withings measures ...` weight/BP/body metrics
 - `withings activity ...` activity summaries
 - `withings sleep ...` sleep summaries
@@ -107,12 +106,6 @@ withings [global flags] <subcommand> [args]
   - flags: `--start/--end`, `--signal` (include signal metadata if available)
   - behavior: idempotent, read-only
   - table output columns: `time`, `heart_rate`, `model`, `device`, `signal_id`, `ecg`, `afib`, `signal`
-  - `--plain` outputs tab-separated lines with a header row
-
-### user
-- `withings user me` show current user profile
-- `withings user list` list linked users (if supported)
-  - table output columns: `id`, `first_name`, `last_name`, `email`, `birthdate`, `gender`, `timezone`
   - `--plain` outputs tab-separated lines with a header row
 
 ## API escape hatch

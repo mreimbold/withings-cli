@@ -131,7 +131,6 @@ func addRootCommands(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(newHeartCommand())
 	rootCmd.AddCommand(newMeasuresCommand())
 	rootCmd.AddCommand(newSleepCommand())
-	rootCmd.AddCommand(newUserCommand())
 }
 
 func addRootFlags(rootCmd *cobra.Command, opts *globalOptions) {
