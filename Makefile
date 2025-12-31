@@ -1,7 +1,7 @@
 .PHONY: build fmt lint test tools
 
 build:
-	go build ./...
+	go build -o withings-cli ./cmd/withings
 
 fmt:
 	gofumpt -w $$(go list -f '{{.Dir}}' ./...)
