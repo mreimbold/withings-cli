@@ -44,6 +44,11 @@ You can override the listener with:
 ./withings-cli auth login --listen 127.0.0.1:9876
 ```
 
+### Developer Dashboard
+
+Create your app (Client ID/Secret) in the Withings Developer Dashboard:
+`https://developer.withings.com/dashboard/`
+
 
 ## Config and env
 
