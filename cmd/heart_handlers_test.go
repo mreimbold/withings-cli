@@ -12,6 +12,9 @@ const (
 	testLimit         = 50
 	testOffset        = 10
 	testUserID        = "user-123"
+	testBaseV2        = "https://wbsapi.withings.net/v2"
+	testBaseV2Slash   = "https://wbsapi.withings.net/v2/"
+	testBaseNoV2      = "https://wbsapi.withings.net"
 	testLastUpdate    = 100
 	testLastInvalid   = -1
 	testSeriesStart   = 111
@@ -21,7 +24,25 @@ const (
 	testSignalID      = 99
 	testTimestampFmt  = "timestamp got %d want %d"
 	testSignalIDFmt   = "signal id got %d want %d"
+	testServiceFmt    = "service got %q want %q"
 )
+
+// TestHeartServiceForBase handles base URLs with and without /v2.
+func TestHeartServiceForBase(t *testing.T) {
+	t.Parallel()
+
+	if got := heartServiceForBase(testBaseNoV2); got != heartServiceName {
+		t.Fatalf(testServiceFmt, got, heartServiceName)
+	}
+
+	if got := heartServiceForBase(testBaseV2); got != heartServiceShort {
+		t.Fatalf(testServiceFmt, got, heartServiceShort)
+	}
+
+	if got := heartServiceForBase(testBaseV2Slash); got != heartServiceShort {
+		t.Fatalf(testServiceFmt, got, heartServiceShort)
+	}
+}
 
 // TestBuildHeartParams ensures standard heart query params are built.
 func TestBuildHeartParams(t *testing.T) {

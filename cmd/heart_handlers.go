@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	heartServiceName     = "heart"
-	heartActionGet       = "get"
+	heartServiceName     = "v2/heart"
+	heartActionList      = "list"
+	heartServiceV2Suffix = "/v2"
+	heartServiceShort    = "heart"
 	heartStartDateParam  = "startdate"
 	heartEndDateParam    = "enddate"
 	heartLastUpdateParam = "lastupdate"
@@ -54,10 +56,12 @@ func runHeartGet(cmd *cobra.Command, opts heartGetOptions) error {
 	}
 
 	apiOpts := apiCallOptions{
-		Service: heartServiceName,
-		Action:  heartActionGet,
-		Params:  emptyString,
-		DryRun:  false,
+		Service: heartServiceForBase(
+			apiBaseURL(globalOpts.BaseURL, globalOpts.Cloud),
+		),
+		Action: heartActionList,
+		Params: emptyString,
+		DryRun: false,
 	}
 
 	req, _, err := buildAPICallRequest(
@@ -100,6 +104,15 @@ func buildHeartParams(opts heartGetOptions) (url.Values, error) {
 	}
 
 	return values, nil
+}
+
+func heartServiceForBase(baseURL string) string {
+	trimmed := strings.TrimRight(baseURL, "/")
+	if strings.HasSuffix(trimmed, heartServiceV2Suffix) {
+		return heartServiceShort
+	}
+
+	return heartServiceName
 }
 
 func applyHeartTimeFilters(
