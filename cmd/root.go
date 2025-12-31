@@ -45,8 +45,6 @@ func (e *exitError) Error() string {
 	return e.err.Error()
 }
 
-type runEFunc func(*cobra.Command, []string) error
-
 // Execute runs the CLI and returns the exit code.
 func Execute() int {
 	rootCmd := newRootCommand()
@@ -127,13 +125,13 @@ func validateGlobalOptions(opts *globalOptions) error {
 }
 
 func addRootCommands(rootCmd *cobra.Command) {
-	rootCmd.AddCommand(newActivityCommand(notImplementedHandler))
+	rootCmd.AddCommand(newActivityCommand())
 	rootCmd.AddCommand(newAPICommand())
 	rootCmd.AddCommand(newAuthCommand())
 	rootCmd.AddCommand(newHeartCommand())
 	rootCmd.AddCommand(newMeasuresCommand())
-	rootCmd.AddCommand(newSleepCommand(notImplementedHandler))
-	rootCmd.AddCommand(newUserCommand(notImplementedHandler))
+	rootCmd.AddCommand(newSleepCommand())
+	rootCmd.AddCommand(newUserCommand())
 }
 
 func addRootFlags(rootCmd *cobra.Command, opts *globalOptions) {
@@ -191,12 +189,5 @@ func addRootFlags(rootCmd *cobra.Command, opts *globalOptions) {
 		"base-url",
 		emptyString,
 		"override API base URL",
-	)
-}
-
-func notImplementedHandler(cmd *cobra.Command, _ []string) error {
-	return newExitError(
-		exitCodeFailure,
-		fmt.Errorf("%w: %s", errNotImplemented, cmd.CommandPath()),
 	)
 }

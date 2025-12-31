@@ -10,7 +10,7 @@ type activityGetOptions struct {
 	LastUpdate lastUpdateOption
 }
 
-func newActivityCommand(notImplemented runEFunc) *cobra.Command {
+func newActivityCommand() *cobra.Command {
 	var opts activityGetOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
@@ -22,7 +22,9 @@ func newActivityCommand(notImplemented runEFunc) *cobra.Command {
 	activityGetCmd := &cobra.Command{
 		Use:   "get",
 		Short: "Fetch activity summaries",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runActivityGet(cmd, opts)
+		},
 	}
 
 	activityCmd.AddCommand(activityGetCmd)

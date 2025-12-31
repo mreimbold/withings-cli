@@ -2,7 +2,7 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-func newUserCommand(notImplemented runEFunc) *cobra.Command {
+func newUserCommand() *cobra.Command {
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	userCmd := &cobra.Command{
 		Use:   "user",
@@ -12,13 +12,17 @@ func newUserCommand(notImplemented runEFunc) *cobra.Command {
 	userMeCmd := &cobra.Command{
 		Use:   "me",
 		Short: "Show current user profile",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runUserMe(cmd)
+		},
 	}
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	userListCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List linked users",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runUserList(cmd)
+		},
 	}
 
 	userCmd.AddCommand(userMeCmd)

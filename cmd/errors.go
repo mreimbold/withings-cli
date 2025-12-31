@@ -12,6 +12,5 @@ const (
 		"mutually exclusive"
 	errQuietVerboseConflict staticError = "--quiet and --verbose cannot be " +
 		"combined"
-	errInvalidCloud   staticError = "invalid --cloud (expected eu or us)"
-	errNotImplemented staticError = "not implemented"
+	errInvalidCloud staticError = "invalid --cloud (expected eu or us)"
 )

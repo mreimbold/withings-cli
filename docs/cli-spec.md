@@ -91,10 +91,16 @@ withings [global flags] <subcommand> [args]
 ### activity
 - `withings activity get`
   - flags: `--date <YYYY-MM-DD>`, `--start/--end` for range
+  - behavior: idempotent, read-only
+  - table output columns: `date`, `steps`, `distance`, `calories`, `total_calories`, `active`, `elevation`, `soft`, `moderate`, `intense`
+  - `--plain` outputs tab-separated lines with a header row
 
 ### sleep
 - `withings sleep get`
   - flags: `--date`, `--start/--end`, `--model <1|2>` (if supported)
+  - behavior: idempotent, read-only
+  - table output columns: `start`, `end`, `duration`, `score`, `wakeups`, `model`
+  - `--plain` outputs tab-separated lines with a header row
 
 ### heart
 - `withings heart get`
@@ -106,6 +112,8 @@ withings [global flags] <subcommand> [args]
 ### user
 - `withings user me` show current user profile
 - `withings user list` list linked users (if supported)
+  - table output columns: `id`, `first_name`, `last_name`, `email`, `birthdate`, `gender`, `timezone`
+  - `--plain` outputs tab-separated lines with a header row
 
 ## API escape hatch
 - `withings api call --service <service> --action <action> --params <json>`

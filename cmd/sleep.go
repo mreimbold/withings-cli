@@ -11,7 +11,7 @@ type sleepGetOptions struct {
 	Model      int
 }
 
-func newSleepCommand(notImplemented runEFunc) *cobra.Command {
+func newSleepCommand() *cobra.Command {
 	var opts sleepGetOptions
 
 	//nolint:exhaustruct // Cobra command defaults are intentional.
@@ -23,7 +23,9 @@ func newSleepCommand(notImplemented runEFunc) *cobra.Command {
 	sleepGetCmd := &cobra.Command{
 		Use:   "get",
 		Short: "Fetch sleep summaries",
-		RunE:  notImplemented,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runSleepGet(cmd, opts)
+		},
 	}
 
 	sleepCmd.AddCommand(sleepGetCmd)
