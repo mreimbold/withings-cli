@@ -23,20 +23,18 @@ export WITHINGS_CLIENT_SECRET=your_client_secret
 
 ```
 $ ./withings-cli measures get --type weight,bp_sys,bp_dia --start 2025-12-01
-┌────────────┬────────┬────────┬────────┐
-│ Date       │ Weight │ BP Sys │ BP Dia │
-├────────────┼────────┼────────┼────────┤
-│ 2025-12-15 │ 72.3kg │ 120    │ 80     │
-│ 2025-12-08 │ 72.1kg │ 118    │ 78     │
-└────────────┴────────┴────────┴────────┘
+Time                       Type     Value   Unit  Category
+2025-12-28T07:44:12+01:00  weight   82.450  kg    real
+2025-12-28T07:44:12+01:00  bp_sys   118     mmHg  real
+2025-12-28T07:44:12+01:00  bp_dia   76      mmHg  real
+2025-12-21T06:58:03+01:00  weight   82.120  kg    real
+2025-12-21T06:58:03+01:00  bp_sys   120     mmHg  real
+2025-12-21T06:58:03+01:00  bp_dia   78      mmHg  real
 
 $ ./withings-cli sleep get --start 2025-12-01 --end 2025-12-07
-┌────────────┬──────────┬───────────┬─────────────┐
-│ Date       │ Duration │ Deep      │ REM         │
-├────────────┼──────────┼───────────┼─────────────┤
-│ 2025-12-07 │ 7h 23m   │ 1h 45m    │ 1h 52m      │
-│ 2025-12-06 │ 6h 58m   │ 1h 32m    │ 1h 41m      │
-└────────────┴──────────┴───────────┴─────────────┘
+Start                      End                        Duration  Score  Wakeups  Model
+2025-12-06T23:14:00+01:00  2025-12-07T06:41:00+01:00  26820     84     2        2
+2025-12-05T23:32:00+01:00  2025-12-06T06:28:00+01:00  24960     78     3        2
 ```
 
 Output formats: tables (default), `--json`, or `--plain`.
