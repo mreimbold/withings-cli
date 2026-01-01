@@ -94,6 +94,7 @@ withings [global flags] <subcommand> [args]
 ### sleep
 - `withings sleep get`
   - flags: `--date`, `--start/--end`, `--model <1|2>` (if supported)
+  - `--end` defaults to the current datetime when omitted
   - behavior: idempotent, read-only
   - table output columns: `start`, `end`, `duration`, `score`, `wakeups`, `model`
   - `--plain` outputs tab-separated lines with a header row

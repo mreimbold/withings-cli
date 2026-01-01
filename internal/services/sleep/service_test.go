@@ -24,10 +24,13 @@ const (
 	sleepTestDay        = 30
 	sleepTestStartHour  = 1
 	sleepTestEndHour    = 8
+	sleepTestStartParam = "startdateymd"
+	sleepTestEndParam   = "enddateymd"
 	sleepTestBaseNoV2   = "https://wbsapi.withings.net"
 	sleepTestBaseV2     = "https://wbsapi.withings.net/v2"
 	sleepTestBaseV2Sl   = "https://wbsapi.withings.net/v2/"
 	sleepTestServiceFmt = "service got %q want %q"
+	sleepTestBuildErr   = "buildParams: %v"
 	sleepTestErrFmt     = "err got %v want %v"
 	sleepTestExpectErr  = "expected error"
 	sleepTestRangeValue = "1"
@@ -70,24 +73,25 @@ func TestBuildParamsDate(t *testing.T) {
 		User:       params.User{UserID: sleepTestUserID},
 		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
 		Model:      sleepTestModel,
+		Now:        nil,
 	}
 
 	values, err := buildParams(opts)
 	if err != nil {
-		t.Fatalf("buildParams: %v", err)
+		t.Fatalf(sleepTestBuildErr, err)
 	}
 
 	assertParam(
 		t,
 		values.Get(startDateParam),
 		sleepTestDate,
-		"startdateymd",
+		sleepTestStartParam,
 	)
 	assertParam(
 		t,
 		values.Get(endDateParam),
 		sleepTestDate,
-		"enddateymd",
+		sleepTestEndParam,
 	)
 	assertParam(t, values.Get(limitParam), "20", "limit")
 	assertParam(t, values.Get(offsetParam), "5", "offset")
@@ -133,24 +137,68 @@ func TestBuildParamsTimeRange(t *testing.T) {
 		User:       params.User{UserID: sleepTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
 		Model:      sleepTestDefaultInt,
+		Now:        nil,
 	}
 
 	values, err := buildParams(opts)
 	if err != nil {
-		t.Fatalf("buildParams: %v", err)
+		t.Fatalf(sleepTestBuildErr, err)
 	}
 
 	assertParam(
 		t,
 		values.Get(startDateParam),
 		sleepTestDate,
-		"startdateymd",
+		sleepTestStartParam,
 	)
 	assertParam(
 		t,
 		values.Get(endDateParam),
 		sleepTestDate,
-		"enddateymd",
+		sleepTestEndParam,
+	)
+}
+
+// TestBuildParamsDefaultEnd uses today's date when end is omitted.
+func TestBuildParamsDefaultEnd(t *testing.T) {
+	t.Parallel()
+
+	fixedNow := time.Date(
+		sleepTestYear,
+		time.Month(sleepTestMonth),
+		sleepTestDay,
+		sleepTestEndHour,
+		sleepTestDefaultInt,
+		sleepTestDefaultInt,
+		sleepTestDefaultInt,
+		time.UTC,
+	)
+
+	opts := Options{
+		TimeRange: params.TimeRange{Start: sleepTestEmpty, End: sleepTestEmpty},
+		Date:      params.Date{Date: sleepTestEmpty},
+		Pagination: params.Pagination{
+			Limit:  sleepTestDefaultInt,
+			Offset: sleepTestDefaultInt,
+		},
+		User:       params.User{UserID: sleepTestEmpty},
+		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
+		Model:      sleepTestDefaultInt,
+		Now:        func() time.Time { return fixedNow },
+	}
+
+	values, err := buildParams(opts)
+	if err != nil {
+		t.Fatalf(sleepTestBuildErr, err)
+	}
+
+	want := fixedNow.UTC().Format("2006-01-02")
+	assertParam(t, values.Get(endDateParam), want, sleepTestEndParam)
+	assertParam(
+		t,
+		values.Get(startDateParam),
+		sleepTestEmpty,
+		sleepTestStartParam,
 	)
 }
 
@@ -171,6 +219,7 @@ func TestBuildParamsLastUpdateConflict(t *testing.T) {
 		User:       params.User{UserID: sleepTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: sleepTestLastUpdate},
 		Model:      sleepTestDefaultInt,
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)
@@ -200,6 +249,7 @@ func TestBuildParamsDateConflict(t *testing.T) {
 		User:       params.User{UserID: sleepTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
 		Model:      sleepTestDefaultInt,
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)
@@ -229,6 +279,7 @@ func TestBuildParamsInvalidDate(t *testing.T) {
 		User:       params.User{UserID: sleepTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
 		Model:      sleepTestDefaultInt,
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)
