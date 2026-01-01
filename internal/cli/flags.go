@@ -10,13 +10,13 @@ func addTimeRangeFlags(cmd *cobra.Command, opts *params.TimeRange) {
 		&opts.Start,
 		"start",
 		emptyString,
-		"start time (RFC3339 or epoch)",
+		"start time (RFC3339, YYYY-MM-DD, or epoch)",
 	)
 	cmd.Flags().StringVar(
 		&opts.End,
 		"end",
 		emptyString,
-		"end time (RFC3339 or epoch)",
+		"end time (RFC3339, YYYY-MM-DD, or epoch)",
 	)
 }
 

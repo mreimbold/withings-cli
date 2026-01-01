@@ -160,6 +160,21 @@ func TestParseEpochRFC3339(t *testing.T) {
 	}
 }
 
+// TestParseEpochDate parses YYYY-MM-DD values.
+func TestParseEpochDate(t *testing.T) {
+	t.Parallel()
+
+	epoch, err := ParseEpoch(testDateValue)
+	if err != nil {
+		t.Fatalf("parseEpoch: %v", err)
+	}
+
+	want := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
+	if epoch != want {
+		t.Fatalf("epoch got %d want %d", epoch, want)
+	}
+}
+
 func strconvFormatInt(value int64) string {
 	return strconv.FormatInt(value, testNumberBase10)
 }

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/mreimbold/withings-cli/internal/app"
 	"github.com/mreimbold/withings-cli/internal/errs"
@@ -53,6 +54,7 @@ type Options struct {
 	Pagination params.Pagination
 	User       params.User
 	LastUpdate params.LastUpdate
+	Now        func() time.Time
 }
 
 // Run fetches activity summaries and writes output.
@@ -105,7 +107,19 @@ func serviceForBase(baseURL string) string {
 func buildParams(opts Options) (url.Values, error) {
 	values := url.Values{}
 
-	err := applyTimeFilters(&values, opts.Date, opts.TimeRange, opts.LastUpdate)
+	nowFunc := opts.Now
+
+	if nowFunc == nil {
+		nowFunc = time.Now
+	}
+
+	err := applyTimeFilters(
+		&values,
+		opts.Date,
+		opts.TimeRange,
+		opts.LastUpdate,
+		nowFunc,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +135,7 @@ func applyTimeFilters(
 	date params.Date,
 	timeRange params.TimeRange,
 	lastUpdate params.LastUpdate,
+	nowFunc func() time.Time,
 ) error {
 	err := filters.ApplyLastUpdateFilter(
 		values,
@@ -133,6 +148,12 @@ func applyTimeFilters(
 	)
 	if err != nil {
 		return fmt.Errorf("apply last-update filter: %w", err)
+	}
+
+	if lastUpdate.LastUpdate == defaultInt &&
+		date.Date == emptyString &&
+		timeRange.End == emptyString {
+		timeRange.End = nowFunc().UTC().Format(time.RFC3339)
 	}
 
 	dateRange, err := filters.ResolveDateRange(

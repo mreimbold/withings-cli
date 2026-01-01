@@ -23,10 +23,13 @@ const (
 	activityTestDay        = 30
 	activityTestStartHour  = 4
 	activityTestEndHour    = 12
+	activityTestStartParam = "startdateymd"
+	activityTestEndParam   = "enddateymd"
 	activityTestBaseNoV2   = "https://wbsapi.withings.net"
 	activityTestBaseV2     = "https://wbsapi.withings.net/v2"
 	activityTestBaseV2Sl   = "https://wbsapi.withings.net/v2/"
 	activityTestServiceFmt = "service got %q want %q"
+	activityTestBuildErr   = "buildParams: %v"
 	activityTestErrFmt     = "err got %v want %v"
 	activityTestExpectErr  = "expected error"
 	activityTestRangeValue = "1"
@@ -71,24 +74,25 @@ func TestBuildParamsDate(t *testing.T) {
 		},
 		User:       params.User{UserID: activityTestUserID},
 		LastUpdate: params.LastUpdate{LastUpdate: activityTestDefaultInt},
+		Now:        nil,
 	}
 
 	values, err := buildParams(opts)
 	if err != nil {
-		t.Fatalf("buildParams: %v", err)
+		t.Fatalf(activityTestBuildErr, err)
 	}
 
 	assertParam(
 		t,
 		values.Get(startDateParam),
 		activityTestDate,
-		"startdateymd",
+		activityTestStartParam,
 	)
 	assertParam(
 		t,
 		values.Get(endDateParam),
 		activityTestDate,
-		"enddateymd",
+		activityTestEndParam,
 	)
 	assertParam(t, values.Get(limitParam), "25", "limit")
 	assertParam(t, values.Get(offsetParam), "10", "offset")
@@ -137,24 +141,70 @@ func TestBuildParamsTimeRange(t *testing.T) {
 		},
 		User:       params.User{UserID: activityTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: activityTestDefaultInt},
+		Now:        nil,
 	}
 
 	values, err := buildParams(opts)
 	if err != nil {
-		t.Fatalf("buildParams: %v", err)
+		t.Fatalf(activityTestBuildErr, err)
 	}
 
 	assertParam(
 		t,
 		values.Get(startDateParam),
 		activityTestDate,
-		"startdateymd",
+		activityTestStartParam,
 	)
 	assertParam(
 		t,
 		values.Get(endDateParam),
 		activityTestDate,
-		"enddateymd",
+		activityTestEndParam,
+	)
+}
+
+// TestBuildParamsDefaultEnd uses today's date when end is omitted.
+func TestBuildParamsDefaultEnd(t *testing.T) {
+	t.Parallel()
+
+	fixedNow := time.Date(
+		activityTestYear,
+		time.Month(activityTestMonth),
+		activityTestDay,
+		activityTestEndHour,
+		activityTestDefaultInt,
+		activityTestDefaultInt,
+		activityTestDefaultInt,
+		time.UTC,
+	)
+
+	opts := Options{
+		TimeRange: params.TimeRange{
+			Start: activityTestEmpty,
+			End:   activityTestEmpty,
+		},
+		Date: params.Date{Date: activityTestEmpty},
+		Pagination: params.Pagination{
+			Limit:  activityTestDefaultInt,
+			Offset: activityTestDefaultInt,
+		},
+		User:       params.User{UserID: activityTestEmpty},
+		LastUpdate: params.LastUpdate{LastUpdate: activityTestDefaultInt},
+		Now:        func() time.Time { return fixedNow },
+	}
+
+	values, err := buildParams(opts)
+	if err != nil {
+		t.Fatalf(activityTestBuildErr, err)
+	}
+
+	want := fixedNow.UTC().Format("2006-01-02")
+	assertParam(t, values.Get(endDateParam), want, activityTestEndParam)
+	assertParam(
+		t,
+		values.Get(startDateParam),
+		activityTestEmpty,
+		activityTestStartParam,
 	)
 }
 
@@ -174,6 +224,7 @@ func TestBuildParamsLastUpdateConflict(t *testing.T) {
 		},
 		User:       params.User{UserID: activityTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: activityTestLastUpdate},
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)
@@ -202,6 +253,7 @@ func TestBuildParamsDateConflict(t *testing.T) {
 		},
 		User:       params.User{UserID: activityTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: activityTestDefaultInt},
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)
@@ -230,6 +282,7 @@ func TestBuildParamsInvalidDate(t *testing.T) {
 		},
 		User:       params.User{UserID: activityTestEmpty},
 		LastUpdate: params.LastUpdate{LastUpdate: activityTestDefaultInt},
+		Now:        nil,
 	}
 
 	_, err := buildParams(opts)

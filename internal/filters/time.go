@@ -100,7 +100,7 @@ func HasTimeRange(timeRange params.TimeRange) bool {
 	return timeRange.Start != emptyString || timeRange.End != emptyString
 }
 
-// ParseEpoch parses RFC3339 or epoch timestamp strings.
+// ParseEpoch parses RFC3339, YYYY-MM-DD, or epoch timestamp strings.
 func ParseEpoch(value string) (int64, error) {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == emptyString {
@@ -114,7 +114,12 @@ func ParseEpoch(value string) (int64, error) {
 
 	parsed, err := time.Parse(time.RFC3339, trimmed)
 	if err != nil {
-		return defaultInt64, fmt.Errorf("parse RFC3339 time: %w", err)
+		parsedDate, dateErr := time.Parse(dateLayout, trimmed)
+		if dateErr != nil {
+			return defaultInt64, errs.ErrInvalidTimeFormat
+		}
+
+		return parsedDate.Unix(), nil
 	}
 
 	return parsed.Unix(), nil

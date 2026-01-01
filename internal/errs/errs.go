@@ -6,11 +6,11 @@ import "errors"
 var (
 	// ErrInvalidStartTime indicates an invalid start time argument.
 	ErrInvalidStartTime = errors.New(
-		"invalid --start (expected RFC3339 or epoch)",
+		"invalid --start (expected RFC3339, YYYY-MM-DD, or epoch)",
 	)
 	// ErrInvalidEndTime indicates an invalid end time argument.
 	ErrInvalidEndTime = errors.New(
-		"invalid --end (expected RFC3339 or epoch)",
+		"invalid --end (expected RFC3339, YYYY-MM-DD, or epoch)",
 	)
 	// ErrInvalidLastUpdate indicates an invalid last-update argument.
 	ErrInvalidLastUpdate = errors.New(
@@ -22,6 +22,8 @@ var (
 	)
 	// ErrInvalidDate indicates an invalid date argument.
 	ErrInvalidDate = errors.New("invalid --date (expected YYYY-MM-DD)")
+	// ErrInvalidTimeFormat indicates a time parse failure.
+	ErrInvalidTimeFormat = errors.New("expected RFC3339 or YYYY-MM-DD")
 	// ErrDateRangeConflict indicates --date used with --start or --end.
 	ErrDateRangeConflict = errors.New(
 		"--date cannot be combined with --start or --end",

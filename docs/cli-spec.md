@@ -66,7 +66,7 @@ withings [global flags] <subcommand> [args]
 - access tokens are refreshed automatically when expired (requires `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET`)
 
 ## Data commands (common flags)
-- common flags: `--start <rfc3339|epoch>`, `--end <rfc3339|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`
+- common flags: `--start <rfc3339|YYYY-MM-DD|epoch>`, `--end <rfc3339|YYYY-MM-DD|epoch>`, `--last-update <epoch>`, `--limit <n>`, `--offset <n>`, `--user-id <id>`
 - output: tables by default; `--json` returns raw API `body`
 
 ### measures
@@ -86,6 +86,7 @@ withings [global flags] <subcommand> [args]
 ### activity
 - `withings activity get`
   - flags: `--date <YYYY-MM-DD>`, `--start/--end` for range
+  - `--end` defaults to the current datetime when omitted
   - behavior: idempotent, read-only
   - table output columns: `date`, `steps`, `distance`, `calories`, `total_calories`, `active`, `elevation`, `soft`, `moderate`, `intense`
   - `--plain` outputs tab-separated lines with a header row
