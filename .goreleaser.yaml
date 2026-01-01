@@ -2,12 +2,20 @@ version: 2
 
 project_name: withings-cli
 
+before:
+  hooks:
+    - go mod tidy
+
 builds:
   - id: withings-cli
     main: ./cmd/withings
     binary: withings-cli
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}}
     goos:
       - linux
       - darwin
@@ -19,16 +27,35 @@ builds:
       - goos: windows
         goarch: arm64
 
+universal_binaries:
+  - id: withings-cli-universal
+    ids:
+      - withings-cli
+    name_template: withings-cli
+    replace: true
+
 archives:
   - id: default
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_{{ if eq .Arch "all" }}universal{{ else }}{{ .Arch }}{{ end }}
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - LICENSE
+      - README.md
 
 checksum:
-  name_template: "checksums.txt"
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
 
 release:
   prerelease: auto
