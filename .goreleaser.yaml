@@ -59,3 +59,18 @@ changelog:
 
 release:
   prerelease: auto
+
+brews:
+  - name: withings-cli
+    repository:
+      owner: mreimbold
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/mreimbold/withings-cli
+    description: CLI for Withings Health API
+    license: MIT
+    install: |
+      bin.install "withings-cli"
+    test: |
+      system "#{bin}/withings-cli", "--version"
