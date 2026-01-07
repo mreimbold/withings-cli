@@ -163,29 +163,8 @@ func TestBuildParamsTimeRange(t *testing.T) {
 func TestBuildParamsDefaultEnd(t *testing.T) {
 	t.Parallel()
 
-	fixedNow := time.Date(
-		sleepTestYear,
-		time.Month(sleepTestMonth),
-		sleepTestDay,
-		sleepTestEndHour,
-		sleepTestDefaultInt,
-		sleepTestDefaultInt,
-		sleepTestDefaultInt,
-		time.UTC,
-	)
-
-	opts := Options{
-		TimeRange: params.TimeRange{Start: sleepTestEmpty, End: sleepTestEmpty},
-		Date:      params.Date{Date: sleepTestEmpty},
-		Pagination: params.Pagination{
-			Limit:  sleepTestDefaultInt,
-			Offset: sleepTestDefaultInt,
-		},
-		User:       params.User{UserID: sleepTestEmpty},
-		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
-		Model:      sleepTestDefaultInt,
-		Now:        func() time.Time { return fixedNow },
-	}
+	fixedNow := sleepFixedNow()
+	opts := sleepOptionsWithRange(sleepTestEmpty, sleepTestEmpty, fixedNow)
 
 	values, err := buildParams(opts)
 	if err != nil {
@@ -197,9 +176,60 @@ func TestBuildParamsDefaultEnd(t *testing.T) {
 	assertParam(
 		t,
 		values.Get(startDateParam),
-		sleepTestEmpty,
+		want,
 		sleepTestStartParam,
 	)
+}
+
+// TestBuildParamsStartOnlyDefaultsEnd uses now for end when only start is set.
+func TestBuildParamsStartOnlyDefaultsEnd(t *testing.T) {
+	t.Parallel()
+
+	fixedNow := sleepFixedNow()
+	opts := sleepOptionsWithRange(sleepTestDate, sleepTestEmpty, fixedNow)
+
+	values, err := buildParams(opts)
+	if err != nil {
+		t.Fatalf(sleepTestBuildErr, err)
+	}
+
+	wantEnd := fixedNow.UTC().Format("2006-01-02")
+
+	assertParam(
+		t,
+		values.Get(startDateParam),
+		sleepTestDate,
+		sleepTestStartParam,
+	)
+	assertParam(t, values.Get(endDateParam), wantEnd, sleepTestEndParam)
+}
+
+func sleepFixedNow() time.Time {
+	return time.Date(
+		sleepTestYear,
+		time.Month(sleepTestMonth),
+		sleepTestDay,
+		sleepTestEndHour,
+		sleepTestDefaultInt,
+		sleepTestDefaultInt,
+		sleepTestDefaultInt,
+		time.UTC,
+	)
+}
+
+func sleepOptionsWithRange(start, end string, now time.Time) Options {
+	return Options{
+		TimeRange: params.TimeRange{Start: start, End: end},
+		Date:      params.Date{Date: sleepTestEmpty},
+		Pagination: params.Pagination{
+			Limit:  sleepTestDefaultInt,
+			Offset: sleepTestDefaultInt,
+		},
+		User:       params.User{UserID: sleepTestEmpty},
+		LastUpdate: params.LastUpdate{LastUpdate: sleepTestDefaultInt},
+		Model:      sleepTestDefaultInt,
+		Now:        func() time.Time { return now },
+	}
 }
 
 // TestBuildParamsLastUpdateConflict rejects mixed filters.

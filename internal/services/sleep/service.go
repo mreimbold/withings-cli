@@ -154,15 +154,11 @@ func applyTimeFilters(
 		return fmt.Errorf("apply last-update filter: %w", err)
 	}
 
-	if lastUpdate.LastUpdate == defaultInt64 &&
-		date.Date == emptyString &&
-		timeRange.End == emptyString {
-		timeRange.End = nowFunc().UTC().Format(time.RFC3339)
-	}
+	resolvedRange := defaultSleepTimeRange(date, timeRange, lastUpdate, nowFunc)
 
 	dateRange, err := filters.ResolveDateRange(
 		date,
-		timeRange,
+		resolvedRange,
 		errs.ErrInvalidStartTime,
 		errs.ErrInvalidEndTime,
 	)
@@ -178,6 +174,27 @@ func applyTimeFilters(
 	)
 
 	return nil
+}
+
+func defaultSleepTimeRange(
+	date params.Date,
+	timeRange params.TimeRange,
+	lastUpdate params.LastUpdate,
+	nowFunc func() time.Time,
+) params.TimeRange {
+	if lastUpdate.LastUpdate != defaultInt64 || date.Date != emptyString {
+		return timeRange
+	}
+
+	if timeRange.End == emptyString {
+		timeRange.End = nowFunc().UTC().Format(time.RFC3339)
+	}
+
+	if timeRange.Start == emptyString {
+		timeRange.Start = timeRange.End
+	}
+
+	return timeRange
 }
 
 func applyUser(values *url.Values, user params.User) {
