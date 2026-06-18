@@ -18,7 +18,7 @@ func newSleepCommand() *cobra.Command {
 	}
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	sleepGetCmd := &cobra.Command{
-		Use:   "get",
+		Use:   getUse,
 		Short: "Fetch sleep summaries",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			appOpts, err := readGlobalOptions(cmd.Root().PersistentFlags())

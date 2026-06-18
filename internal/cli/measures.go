@@ -18,7 +18,7 @@ func newMeasuresCommand() *cobra.Command {
 	}
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	measuresGetCmd := &cobra.Command{
-		Use:   "get",
+		Use:   getUse,
 		Short: "Fetch body measures",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			appOpts, err := readGlobalOptions(cmd.Root().PersistentFlags())

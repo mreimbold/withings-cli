@@ -102,7 +102,7 @@ func TestResolveDateRangeDate(t *testing.T) {
 func TestResolveDateRangeTimeRange(t *testing.T) {
 	t.Parallel()
 
-	startEpoch := time.Date(
+	startEpochSec := time.Date(
 		testYear,
 		time.Month(testMonth),
 		testDay,
@@ -112,7 +112,7 @@ func TestResolveDateRangeTimeRange(t *testing.T) {
 		testDefaultInt,
 		time.UTC,
 	).Unix()
-	endEpoch := time.Date(
+	endEpochSec := time.Date(
 		testYear,
 		time.Month(testMonth),
 		testDay,
@@ -126,8 +126,8 @@ func TestResolveDateRangeTimeRange(t *testing.T) {
 	rangeValues, err := ResolveDateRange(
 		params.Date{Date: testEmptyString},
 		params.TimeRange{
-			Start: strconvFormatInt(startEpoch),
-			End:   strconvFormatInt(endEpoch),
+			Start: strconvFormatInt(startEpochSec),
+			End:   strconvFormatInt(endEpochSec),
 		},
 		errs.ErrInvalidStartTime,
 		errs.ErrInvalidEndTime,
@@ -154,9 +154,9 @@ func TestParseEpochRFC3339(t *testing.T) {
 		t.Fatalf("parseEpoch: %v", err)
 	}
 
-	want := time.Date(2025, 12, 30, 12, 34, 56, 0, time.UTC).Unix()
-	if epoch != want {
-		t.Fatalf("epoch got %d want %d", epoch, want)
+	wantEpochSec := time.Date(2025, 12, 30, 12, 34, 56, 0, time.UTC).Unix()
+	if epoch != wantEpochSec {
+		t.Fatalf("epoch got %d want %d", epoch, wantEpochSec)
 	}
 }
 
@@ -169,9 +169,9 @@ func TestParseEpochDate(t *testing.T) {
 		t.Fatalf("parseEpoch: %v", err)
 	}
 
-	want := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
-	if epoch != want {
-		t.Fatalf("epoch got %d want %d", epoch, want)
+	wantEpochSec := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
+	if epoch != wantEpochSec {
+		t.Fatalf("epoch got %d want %d", epoch, wantEpochSec)
 	}
 }
 

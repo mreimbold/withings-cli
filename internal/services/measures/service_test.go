@@ -217,10 +217,10 @@ func TestBuildParamsMapsFields(t *testing.T) {
 		t.Fatalf(testBuildParamsErrFmt, err)
 	}
 
-	startEpoch := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
-	endEpoch := time.Date(2025, 12, 30, 23, 59, 59, 0, time.UTC).Unix()
-	startValue := strconv.FormatInt(startEpoch, numberBase10)
-	endValue := strconv.FormatInt(endEpoch, numberBase10)
+	startEpochSec := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
+	endEpochSec := time.Date(2025, 12, 30, 23, 59, 59, 0, time.UTC).Unix()
+	startValue := strconv.FormatInt(startEpochSec, numberBase10)
+	endValue := strconv.FormatInt(endEpochSec, numberBase10)
 
 	want := url.Values{
 		typeParam:      {measureTypeWeightID},
@@ -305,7 +305,7 @@ func TestBuildRows(t *testing.T) {
 }
 
 func testBody() body {
-	epoch := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
+	epochSec := time.Date(2025, 12, 30, 0, 0, 0, 0, time.UTC).Unix()
 
 	return body{
 		UpdateTime: testDefaultInt64,
@@ -314,7 +314,7 @@ func testBody() body {
 			{
 				GroupID:  testDefaultInt64,
 				Attrib:   testDefaultInt,
-				Date:     epoch,
+				Date:     epochSec,
 				Category: testMeasureCategory,
 				Measures: []item{
 					{

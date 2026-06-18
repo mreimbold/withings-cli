@@ -2,6 +2,7 @@ package cli
 
 const (
 	emptyString       = ""
+	getUse            = "get"
 	defaultInt        = 0
 	defaultInt64      = 0
 	defaultCloud      = "eu"

@@ -18,7 +18,7 @@ func newActivityCommand() *cobra.Command {
 	}
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	activityGetCmd := &cobra.Command{
-		Use:   "get",
+		Use:   getUse,
 		Short: "Fetch activity summaries",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			appOpts, err := readGlobalOptions(cmd.Root().PersistentFlags())

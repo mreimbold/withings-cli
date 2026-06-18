@@ -103,7 +103,7 @@ func TestBuildParamsDate(t *testing.T) {
 func TestBuildParamsTimeRange(t *testing.T) {
 	t.Parallel()
 
-	startEpoch := time.Date(
+	startEpochSec := time.Date(
 		sleepTestYear,
 		time.Month(sleepTestMonth),
 		sleepTestDay,
@@ -113,7 +113,7 @@ func TestBuildParamsTimeRange(t *testing.T) {
 		sleepTestDefaultInt,
 		time.UTC,
 	).Unix()
-	endEpoch := time.Date(
+	endEpochSec := time.Date(
 		sleepTestYear,
 		time.Month(sleepTestMonth),
 		sleepTestDay,
@@ -126,8 +126,8 @@ func TestBuildParamsTimeRange(t *testing.T) {
 
 	opts := Options{
 		TimeRange: params.TimeRange{
-			Start: strconv.FormatInt(startEpoch, sleepTestBase10),
-			End:   strconv.FormatInt(endEpoch, sleepTestBase10),
+			Start: strconv.FormatInt(startEpochSec, sleepTestBase10),
+			End:   strconv.FormatInt(endEpochSec, sleepTestBase10),
 		},
 		Date: params.Date{Date: sleepTestEmpty},
 		Pagination: params.Pagination{

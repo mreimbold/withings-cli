@@ -18,7 +18,7 @@ func newHeartCommand() *cobra.Command {
 	}
 	//nolint:exhaustruct // Cobra command defaults are intentional.
 	heartGetCmd := &cobra.Command{
-		Use:   "get",
+		Use:   getUse,
 		Short: "Fetch heart data",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			appOpts, err := readGlobalOptions(cmd.Root().PersistentFlags())

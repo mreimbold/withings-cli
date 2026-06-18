@@ -59,6 +59,7 @@ func isTerminal(file *os.File) bool {
 	return info.Mode()&os.ModeCharDevice != emptyFileMode
 }
 
+//nolint:gosec // OAuth URL goes to fixed platform browser opener.
 func openBrowser(ctx context.Context, target string) error {
 	var command *exec.Cmd
 
