@@ -58,6 +58,12 @@ const (
 	testEmptyString         = ""
 	testDefaultInt          = 0
 	testDefaultInt64        = int64(0)
+	testImperialWeightType  = 1
+	testImperialWeightValue = int64(7500)
+	testImperialWeightUnit  = -2
+	testImperialWeightLb    = "165.35"
+	testImperialLbUnit      = "lb"
+	testRowsGotFmt          = "rows got %d want %d"
 )
 
 // TestParseCategory accepts text and numeric values.
@@ -177,6 +183,7 @@ func TestBuildParamsLastUpdateConflict(t *testing.T) {
 		},
 		Types:    testEmptyString,
 		Category: testEmptyString,
+		Units:    testEmptyString,
 	}
 
 	_, err := buildParams(opts)
@@ -210,6 +217,7 @@ func TestBuildParamsMapsFields(t *testing.T) {
 		},
 		Types:    measureTypeWeight,
 		Category: categoryRealText,
+		Units:    testEmptyString,
 	}
 
 	values, err := buildParams(opts)
@@ -300,8 +308,138 @@ func TestFormatScaledValue(t *testing.T) {
 func TestBuildRows(t *testing.T) {
 	t.Parallel()
 
-	rows := buildRows(testBody())
+	rows := buildRows(Options{
+		TimeRange: params.TimeRange{
+			Start: testEmptyString,
+			End:   testEmptyString,
+		},
+		Pagination: params.Pagination{
+			Limit:  testDefaultInt,
+			Offset: testDefaultInt,
+		},
+		User:       params.User{UserID: testEmptyString},
+		LastUpdate: params.LastUpdate{LastUpdate: testDefaultInt64},
+		Types:      testEmptyString,
+		Category:   testEmptyString,
+		Units:      testEmptyString,
+	}, testBody())
 	assertSingleMeasureRow(t, rows)
+}
+
+// TestBuildRowsImperial converts weight to lbs.
+//
+//nolint:dupl // intentionally parallel to NonWeight; tests opposite behaviour
+func TestBuildRowsImperial(t *testing.T) {
+	t.Parallel()
+
+	body := testBody()
+	m := &body.MeasureGroups[testFirstIndex].Measures[testFirstIndex]
+	m.Type = testImperialWeightType
+	m.Value = testImperialWeightValue
+	m.Unit = testImperialWeightUnit
+
+	opts := Options{
+		TimeRange: params.TimeRange{
+			Start: testEmptyString,
+			End:   testEmptyString,
+		},
+		Pagination: params.Pagination{
+			Limit:  testDefaultInt,
+			Offset: testDefaultInt,
+		},
+		User:       params.User{UserID: testEmptyString},
+		LastUpdate: params.LastUpdate{LastUpdate: testDefaultInt64},
+		Types:      testEmptyString,
+		Category:   testEmptyString,
+		Units:      unitImperial,
+	}
+	rows := buildRows(opts, body)
+
+	if len(rows) != testMeasureRowCount {
+		t.Fatalf(testRowsGotFmt, len(rows), testMeasureRowCount)
+	}
+
+	row := rows[testFirstIndex]
+	if row.Value != testImperialWeightLb {
+		t.Fatalf("value got %q want %q", row.Value, testImperialWeightLb)
+	}
+
+	if row.Unit != testImperialLbUnit {
+		t.Fatalf("unit got %q want %q", row.Unit, testImperialLbUnit)
+	}
+}
+
+// TestBuildRowsImperial_NonWeight does not convert non-weight units.
+//
+//nolint:dupl // intentionally parallel to Imperial; tests opposite behaviour
+func TestBuildRowsImperial_NonWeight(t *testing.T) {
+	t.Parallel()
+
+	body := testBody()
+	m := &body.MeasureGroups[testFirstIndex].Measures[testFirstIndex]
+	m.Type = testMeasureType
+	m.Value = testScaleNoValue
+	m.Unit = testScaleNoUnit
+
+	opts := Options{
+		TimeRange: params.TimeRange{
+			Start: testEmptyString,
+			End:   testEmptyString,
+		},
+		Pagination: params.Pagination{
+			Limit:  testDefaultInt,
+			Offset: testDefaultInt,
+		},
+		User:       params.User{UserID: testEmptyString},
+		LastUpdate: params.LastUpdate{LastUpdate: testDefaultInt64},
+		Types:      testEmptyString,
+		Category:   testEmptyString,
+		Units:      unitImperial,
+	}
+	rows := buildRows(opts, body)
+
+	if len(rows) != testMeasureRowCount {
+		t.Fatalf(testRowsGotFmt, len(rows), testMeasureRowCount)
+	}
+
+	row := rows[testFirstIndex]
+	if row.Value != testScaleNoWant {
+		t.Fatalf("value got %q want %q", row.Value, testScaleNoWant)
+	}
+
+	if row.Unit != testMeasureExpectedUnit {
+		t.Fatalf("unit got %q want %q", row.Unit, testMeasureExpectedUnit)
+	}
+}
+
+// TestBuildParams_InvalidUnits rejects invalid unit systems.
+func TestBuildParams_InvalidUnits(t *testing.T) {
+	t.Parallel()
+
+	opts := Options{
+		TimeRange: params.TimeRange{
+			Start: testEmptyString,
+			End:   testEmptyString,
+		},
+		Pagination: params.Pagination{
+			Limit:  testDefaultInt,
+			Offset: testDefaultInt,
+		},
+		User:       params.User{UserID: testEmptyString},
+		LastUpdate: params.LastUpdate{LastUpdate: testDefaultInt64},
+		Types:      testEmptyString,
+		Category:   testEmptyString,
+		Units:      "invalid",
+	}
+
+	_, err := buildParams(opts)
+	if err == nil {
+		t.Fatal("buildParams should have failed with invalid units")
+	}
+
+	if !errors.Is(err, errInvalidUnits) {
+		t.Fatalf("error got %v want errInvalidUnits", err)
+	}
 }
 
 func testBody() body {
@@ -338,7 +476,7 @@ func assertSingleMeasureRow(t *testing.T, rows []row) {
 	row := rows[testFirstIndex]
 	assertMeasureValue(t, "time", row.Time, testMeasureExpectedTime)
 	assertMeasureValue(t, "type", row.Type, measureTypeBPSys)
-	assertMeasureValue(t, "value", row.Value, "120")
+	assertMeasureValue(t, "value", row.Value, testScaleNoWant)
 	assertMeasureValue(t, "unit", row.Unit, testMeasureExpectedUnit)
 	assertMeasureValue(t, "category", row.Category, categoryRealText)
 }

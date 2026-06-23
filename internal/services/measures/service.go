@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -56,6 +57,11 @@ const (
 	defaultInt       = 0
 	defaultInt64     = 0
 	emptyString      = ""
+	kgToLb           = 2.20462262
+	unitImperial     = "imperial"
+	unitMetric       = "metric"
+	lbFormatPrec     = 2
+	lbFormatBits     = 64
 )
 
 var (
@@ -66,6 +72,7 @@ var (
 	errInvalidLastUpdate      = errs.ErrInvalidLastUpdate
 	errLastUpdateConflict     = errs.ErrLastUpdateConflict
 	errMeasureTypesMissing    = errors.New("measure type list is empty")
+	errInvalidUnits           = errors.New("must be metric or imperial")
 )
 
 // Options captures measure query parameters.
@@ -76,6 +83,7 @@ type Options struct {
 	LastUpdate params.LastUpdate
 	Types      string
 	Category   string
+	Units      string
 }
 
 // Run fetches body measures and writes output.
@@ -85,6 +93,8 @@ func Run(
 	appOpts app.Options,
 	accessToken string,
 ) error {
+	opts.Units = strings.ToLower(strings.TrimSpace(opts.Units))
+
 	values, err := buildParams(opts)
 	if err != nil {
 		return app.NewExitError(app.ExitCodeUsage, err)
@@ -113,11 +123,20 @@ func Run(
 		return fmt.Errorf("read response: %w", err)
 	}
 
-	return writeResponse(appOpts, payload)
+	return writeResponse(opts, appOpts, payload)
 }
 
 func buildParams(opts Options) (url.Values, error) {
 	values := url.Values{}
+
+	switch opts.Units {
+	case unitMetric, unitImperial, "":
+		// Valid
+	default:
+		err := fmt.Errorf("invalid units %q: %w", opts.Units, errInvalidUnits)
+
+		return nil, err
+	}
 
 	err := applyTypes(&values, opts.Types)
 	if err != nil {
@@ -410,35 +429,35 @@ var (
 	}
 )
 
-func writeResponse(opts app.Options, payload []byte) error {
+func writeResponse(opts Options, appOpts app.Options, payload []byte) error {
 	decoded, err := decodeResponse(payload)
 	if err != nil {
 		return err
 	}
 
-	return writeBody(opts, decoded.Body)
+	return writeBody(opts, appOpts, decoded.Body)
 }
 
-func writeBody(opts app.Options, body body) error {
-	if opts.Quiet {
+func writeBody(opts Options, appOpts app.Options, body body) error {
+	if appOpts.Quiet {
 		return nil
 	}
 
-	if opts.JSON {
-		return writeJSONOutput(opts, body)
+	if appOpts.JSON {
+		return writeJSONOutput(appOpts, body)
 	}
 
-	rows := buildRows(body)
+	rows := buildRows(opts, body)
 
-	if opts.Plain {
+	if appOpts.Plain {
 		return writePlainOutput(rows)
 	}
 
 	return writeTableOutput(rows)
 }
 
-func writeJSONOutput(opts app.Options, body body) error {
-	err := output.WriteRawJSON(opts, body)
+func writeJSONOutput(appOpts app.Options, body body) error {
+	err := output.WriteRawJSON(appOpts, body)
 	if err != nil {
 		return fmt.Errorf("write json output: %w", err)
 	}
@@ -499,7 +518,7 @@ func decodeResponse(payload []byte) (response, error) {
 	return decoded, nil
 }
 
-func buildRows(body body) []row {
+func buildRows(opts Options, body body) []row {
 	location := measureLocation(body.Timezone)
 	rows := make([]row, defaultInt, len(body.MeasureGroups))
 
@@ -509,17 +528,36 @@ func buildRows(body body) []row {
 
 		for _, item := range group.Measures {
 			typeID := strconv.Itoa(item.Type)
+			val, unit := formatMeasure(opts, typeID, item.Value, item.Unit)
 			rows = append(rows, row{
 				Time:     timestamp,
 				Type:     formatType(typeID),
-				Value:    formatScaledValue(item.Value, item.Unit),
-				Unit:     formatUnit(typeID, item.Unit),
+				Value:    val,
+				Unit:     unit,
 				Category: category,
 			})
 		}
 	}
 
 	return rows
+}
+
+//nolint:nonamedreturns // required by revive:confusing-results (same type)
+func formatMeasure(
+	opts Options,
+	typeID string,
+	value int64,
+	unit int,
+) (formattedValue string, unitLabel string) {
+	if opts.Units == unitImperial && unitByTypeID[typeID] == "kg" {
+		fValue := float64(value) * math.Pow10(unit)
+		lbValue := fValue * kgToLb
+		lb := strconv.FormatFloat(lbValue, 'f', lbFormatPrec, lbFormatBits)
+
+		return lb, "lb"
+	}
+
+	return formatScaledValue(value, unit), formatUnit(typeID, unit)
 }
 
 func measureLocation(timezone string) *time.Location {
